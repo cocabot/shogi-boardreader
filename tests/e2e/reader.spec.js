@@ -110,23 +110,44 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await page.locator('#nextMove').tap();
   await expect(page.locator('#positionLabel')).toHaveText('途中図');
   await expect(page.locator('#positionLabel')).toBeVisible();
+  await expect(page.locator('#nearbyMoves button.has-diagram')).toContainText('途中図');
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#moveRail')).toBeVisible();
+  await expect(page.locator('#prevMove')).toBeVisible();
+  await expect(page.locator('#nextMove')).toBeVisible();
   await expect(page.locator('#branchBox')).toBeVisible();
-  await expect(page.locator('#branchOrigin')).toHaveText('3手目から分岐');
+  const navLayout=await page.evaluate(()=>({
+    prevTop:document.querySelector('#prevMove').getBoundingClientRect().top,
+    movesTop:document.querySelector('#nearbyMoves').getBoundingClientRect().top,
+    nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
+    movesBottom:document.querySelector('#nearbyMoves').getBoundingClientRect().bottom,
+    summaryHeight:document.querySelector('.playback').getBoundingClientRect().height,
+  }));
+  expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
+  expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
+  expect(navLayout.summaryHeight).toBeLessThanOrEqual(32);
+  await expect(page.locator('#branchOrigin')).toContainText('3手目から分岐');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
   await expect(page.locator('#branchSelect option')).toHaveCount(2);
   await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toContainText('3');
+  await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toHaveClass(/has-branch/);
   await expect(page.locator('#nearbyMoves')).toContainText('３四歩');
   await expect(page.locator('#nearbyMoves')).toContainText('同');
 
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#currentMove')).toContainText('4手');
+
   await page.locator('#branchSelect').selectOption('1');
+  await expect(page.locator('#currentMove')).toContainText('3手');
   await expect(page.locator('#currentMove')).toContainText('２六歩');
   await expect(page.getByRole('gridcell',{name:'2六 先手 歩',exact:true})).toBeVisible();
   await expect(page.locator('#branchSelect')).toHaveValue('1');
 
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#currentMove')).toContainText('4手');
   await page.locator('#branchSelect').selectOption('0');
+  await expect(page.locator('#currentMove')).toContainText('3手');
   await expect(page.locator('#currentMove')).toContainText('２二角成');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
 
