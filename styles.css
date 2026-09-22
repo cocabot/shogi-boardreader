@@ -20,3 +20,120 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
 @media(max-width:360px){.toolbar{gap:2px;padding:4px}.file-button{padding:0 7px;font-size:11px}.reader-toolbar button{min-width:25px;padding:0 3px}.page-label{gap:2px}.page-label input{width:34px}.zoom-controls{gap:2px}.board-panel{padding-inline:5px}}
 @media(max-height:600px){.board-panel{grid-template-rows:36px 24px minmax(0,1fr) 24px 32px 32px;gap:2px}.board-header button,.file-button.secondary{height:32px;min-height:32px}.playback button,.board-controls button{min-height:30px}.hand-piece{height:23px;min-height:23px}.hand{min-height:23px}.board-frame{padding-top:12px}.rank-labels{top:12px}}
 @media(prefers-reduced-motion:no-preference){button{transition:background .12s}}
+
+
+/* Mobile board-density pass: prioritize the board over chrome. */
+.board-panel{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  padding:3px 6px 5px;
+}
+.board-header{
+  flex:0 0 38px;
+  min-height:38px;
+}
+.hands-row{
+  flex:0 0 28px;
+  width:100%;
+  max-width:580px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+}
+.hands-row .hand{
+  width:100%;
+  max-width:none;
+  margin:0;
+  min-height:28px;
+  padding:0;
+}
+.hands-row .hand-bottom{
+  justify-content:flex-end;
+}
+.hands-row .hand-bottom .hand-side{
+  order:2;
+}
+.board-wrap{
+  flex:1 1 auto;
+  min-height:0;
+  width:100%;
+}
+.board-frame{
+  padding:13px 14px 4px 4px;
+}
+.file-labels{
+  top:0;
+  left:4px;
+  right:14px;
+}
+.rank-labels{
+  right:0;
+  top:13px;
+  bottom:4px;
+  width:13px;
+}
+.playback,
+.board-controls{
+  flex:0 0 36px;
+  min-height:36px;
+}
+.playback[hidden]{
+  display:none!important;
+}
+.playback button,
+.board-controls button{
+  min-height:36px;
+}
+.hand-side{
+  max-width:58%;
+}
+.empty-hand{
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+@media(max-width:430px){
+  .board-panel{
+    padding-inline:4px;
+  }
+  .board-header{
+    flex-basis:36px;
+    min-height:36px;
+  }
+  .file-button.secondary,
+  .board-header>button{
+    height:34px;
+    min-height:34px;
+  }
+  .hands-row{
+    flex-basis:25px;
+    min-height:25px;
+    gap:4px;
+  }
+  .hands-row .hand{
+    min-height:25px;
+  }
+  .hand-side{
+    font-size:10px;
+    max-width:62%;
+  }
+  .empty-hand{
+    font-size:9px;
+  }
+  .board-frame{
+    padding:12px 13px 3px 3px;
+  }
+  .file-labels{
+    left:3px;
+    right:13px;
+    font-size:8px;
+  }
+  .rank-labels{
+    top:12px;
+    bottom:3px;
+    width:13px;
+    font-size:8px;
+  }
+}
