@@ -137,3 +137,152 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     font-size:8px;
   }
 }
+
+
+/* Compact reading layout: keep the center clear and give space back to the board. */
+:root{--reader-ratio:.5}
+.app{
+  grid-template-rows:minmax(0,calc(var(--reader-ratio)*100% - 10px)) 20px minmax(0,1fr);
+}
+.splitter{
+  min-height:20px;
+  gap:0;
+  background:#d7dcd3;
+}
+.splitter-grip{
+  width:54px;
+  height:3px;
+}
+.splitter-hint{display:none}
+.splitter .splitter-menu{
+  position:absolute;
+  right:4px;
+  top:50%;
+  transform:translateY(-50%);
+  min-width:34px;
+  min-height:18px;
+  height:18px;
+  padding:0 7px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#596a5e;
+  font-size:13px;
+  line-height:1;
+  letter-spacing:1px;
+}
+.board-panel{
+  gap:2px;
+  padding:2px 4px 4px;
+}
+.hands-row{
+  flex:0 0 24px;
+  min-height:24px;
+  gap:4px;
+}
+.hands-row .hand{
+  min-height:24px;
+}
+.hand-side{
+  max-width:68%;
+  font-size:10px;
+}
+.empty-hand{font-size:9px}
+.hand-piece{
+  height:24px;
+  min-height:24px;
+  padding:0 5px;
+  font-size:14px;
+}
+.board-wrap{
+  flex:1 1 auto;
+  min-height:0;
+}
+.playback{
+  flex:0 0 34px;
+  min-height:34px;
+  grid-template-columns:1fr auto 1fr;
+  gap:6px;
+  max-width:430px;
+}
+.playback button{
+  min-height:34px;
+  padding:0 10px;
+  font-size:12px;
+}
+.playback output{
+  min-width:74px;
+  font-size:12px;
+}
+.board-controls,.board-header{display:none!important}
+.promotion-bar{bottom:42px}
+
+.board-menu-dialog{
+  position:fixed;
+  inset:auto 8px calc(env(safe-area-inset-bottom) + 8px);
+  width:auto;
+  max-width:520px;
+  max-height:min(70dvh,560px);
+  margin:0 auto;
+  padding:14px;
+  border-radius:18px;
+}
+.board-menu-dialog header{
+  gap:12px;
+  margin-bottom:12px;
+}
+.board-menu-dialog header>div{
+  min-width:0;
+}
+.board-menu-dialog h2{
+  font-size:18px;
+}
+.board-menu-dialog .mode-label{
+  display:block;
+  margin-top:3px;
+}
+.board-menu-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.board-menu-grid button,
+.board-menu-grid .file-button{
+  width:100%;
+  min-height:44px;
+  height:44px;
+  justify-content:center;
+}
+.board-menu-grid .menu-wide{
+  grid-column:1 / -1;
+}
+.board-menu-dialog::backdrop{
+  background:#16211975;
+  backdrop-filter:blur(2px);
+}
+
+@media(max-width:430px){
+  .board-panel{padding-inline:3px}
+  .hands-row{
+    flex-basis:22px;
+    min-height:22px;
+  }
+  .hands-row .hand{min-height:22px}
+  .hand-side{font-size:9px}
+  .empty-hand{font-size:8px}
+  .board-frame{
+    padding:11px 12px 2px 2px;
+  }
+  .file-labels{
+    top:0;
+    left:2px;
+    right:12px;
+    font-size:8px;
+  }
+  .rank-labels{
+    top:11px;
+    bottom:2px;
+    width:12px;
+    font-size:8px;
+  }
+}
