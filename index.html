@@ -35,7 +35,7 @@
 
     </section>
     <div id="splitter" class="splitter" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="上下の表示割合を変更" aria-valuemin="20" aria-valuemax="70" aria-valuenow="50">
-      <span class="splitter-grip"></span>
+      <span class="splitter-grip"></span><button id="boardFit" type="button">盤を広く</button>
     </div>
     <section id="boardPanel" class="panel board-panel" aria-label="将棋盤">
       <div class="board-wrap">
@@ -61,6 +61,7 @@
             </div>
             <div class="move-rail-nav">
               <button id="prevMove" class="rail-step rail-prev" disabled>‹ 前の手</button>
+              <button id="recordQuickList" class="record-quick-list" type="button" aria-label="現在手と棋譜一覧"><strong id="quickMove"></strong><span id="quickContext"></span></button>
               <ol id="nearbyMoves" class="nearby-moves"></ol>
               <button id="nextMove" class="rail-step rail-next" disabled>次の手 ›</button>
             </div>

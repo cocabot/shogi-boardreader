@@ -44,14 +44,21 @@ function setReaderRatio(ratio) {
   const maxRatio = Math.max(.2, Math.min(.7, (available - minBoardPanel - 16) / available));
   const clamped = Math.max(0.2, Math.min(maxRatio, ratio));
   document.documentElement.style.setProperty("--reader-ratio", clamped.toFixed(3));
-  safeStorage.set("shogi-boardreader:split", String(clamped));
+  safeStorage.set("shogi-boardreader:split-mobile-v3", String(clamped));
   splitter.setAttribute("aria-valuenow", String(Math.round(clamped * 100)));
   queuePdfRender();
   sizeBoard();
 }
 
-const savedRatio = Number(safeStorage.get("shogi-boardreader:split"));
-setReaderRatio(Number.isFinite(savedRatio) && savedRatio >= 0.42 && savedRatio <= 0.58 ? savedRatio : 0.50);
+const savedRatio = Number(safeStorage.get('shogi-boardreader:split-mobile-v3'));
+setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 ? savedRatio : (window.innerWidth <= 600 ? .34 : .5));
+$('#boardFit').onclick = () => {
+  const padding = getComputedStyle(app);
+  const height = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
+  const boardWidth = Math.min(boardPanel.clientWidth - 20, 480);
+  const chrome = moveRail.hidden ? 55 : ($('#branchBox').hidden ? 103 : 135);
+  setReaderRatio((height - boardWidth - chrome - 20) / height);
+};
 
 let splitterDrag = null;
 
@@ -603,6 +610,17 @@ function sizeBoard() {
   const style = getComputedStyle(frame);
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
+  if (window.matchMedia('(max-width: 600px)').matches) {
+    const railHeight = moveRail.hidden ? 0 : moveRail.getBoundingClientRect().height;
+    const size = Math.max(0, Math.floor(Math.min(
+      boardLayout.clientWidth - dx,
+      boardLayout.clientHeight - 34 - railHeight - dy - 6,
+      480,
+    )));
+    boardWrap.style.setProperty('--board-pixels', `${size}px`);
+    boardWrap.style.setProperty('--piece-size', `${Math.max(0, (size-2)/9 * .57)}px`);
+    return;
+  }
   const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width : 0;
   const leftHandWidth = leftHandColumn?.getBoundingClientRect().width || 0;
   const rightHandWidth = rightHandColumn?.getBoundingClientRect().width || 0;
@@ -747,6 +765,8 @@ function updatePlayback() {
   $('#recordDiagram').hidden = !label;
   $('#recordBranch').textContent = branchLabel;
 
+  $('#quickMove').textContent = record && playback ? (ply ? `${ply} ${record.current.displayText}` : '開始局面') : '';
+  $('#quickContext').textContent = [label, branchLabel, record && playback ? `${ply}/${record.length}手` : '', '一覧 ▴'].filter(Boolean).join(' · ');
   updateBranchSwitcher();
   renderNearbyMoves();
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
@@ -849,6 +869,7 @@ function openRecordList() {
   $('#moveList [aria-current="true"]')?.scrollIntoView({block:'nearest'});
 }
 $('#recordListButton').onclick = openRecordList;
+$('#recordQuickList').onclick = openRecordList;
 $('#closeRecord').onclick = () => $('#recordDialog').close();
 $('#studyPosition').onclick = () => {
   playback = false; history = []; future = []; selected = null;

@@ -1472,3 +1472,36 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
   flex-basis:72px!important;
   width:72px!important;
 }
+
+/* Phone layout: no side columns competing with the board. */
+.record-quick-list{display:none}
+.splitter #boardFit{right:6px;min-height:20px;height:20px;font-size:10px;padding:0 7px}
+@media(max-width:600px){
+  .board-panel{padding:2px 4px 3px!important}
+  .board-wrap{display:block!important;width:100%;height:100%;min-height:0;flex:1 1 auto;overflow:hidden}
+  .board-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:34px minmax(0,1fr) auto;align-items:stretch!important;gap:3px!important;width:100%;height:100%;min-height:0}
+  .board-column{grid-column:1 / -1;grid-row:2;min-height:0;align-self:center;justify-self:center;gap:0;max-width:100%}
+  .record-context{display:none!important}
+  .side-hand-column{grid-row:1;align-self:stretch!important;display:block!important;width:auto!important;height:34px!important;min-width:0;flex:none!important;overflow:hidden}
+  .side-hand-left{grid-column:1}.side-hand-right{grid-column:2;border-left:1px solid #d3d8ca}
+  .side-hand-column .hand{flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:4px;padding:1px 3px!important;height:34px!important;width:100%;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none}
+  .side-hand-column .hand-side{order:0!important;writing-mode:horizontal-tb!important;text-orientation:mixed!important;width:auto!important;max-width:62px!important;white-space:nowrap!important;text-overflow:ellipsis;flex:0 0 auto!important;font-size:10px!important;line-height:1.2}
+  .side-hand-column .empty-hand{order:0!important;writing-mode:horizontal-tb!important;white-space:nowrap!important;width:auto!important;font-size:10px!important}
+  .side-hand-column .hand-piece{display:flex!important;align-items:center;justify-content:center;gap:2px;flex:0 0 auto!important;width:auto!important;min-width:32px!important;height:30px!important;min-height:30px!important;padding:0 4px!important;font-size:18px!important}
+  .side-hand-column .hand-piece:disabled{opacity:1;color:#463521}
+  .side-hand-column .hand-piece small{position:static!important;font-size:10px!important;min-width:12px;height:13px;background:transparent;color:#5b654e}
+  .move-rail{grid-column:1 / -1;grid-row:3;display:flex!important;flex-direction:column;width:100%!important;height:auto!important;min-height:0;flex:none!important;align-self:end!important;gap:3px;overflow:hidden!important}
+  .move-rail[hidden]{display:none!important}
+  .move-rail-nav{display:grid!important;grid-template-columns:76px minmax(0,1fr) 76px;grid-template-rows:46px;width:100%;height:46px;gap:4px}
+  .move-rail .rail-step{width:100%;height:46px!important;min-height:46px!important;flex:none!important;font-size:12px!important;padding:0 5px!important;order:0!important}
+  .rail-prev{grid-column:1;grid-row:1}.rail-next{grid-column:3;grid-row:1}
+  .record-quick-list{display:flex;grid-column:2;grid-row:1;flex-direction:column;justify-content:center;align-items:center;gap:3px;min-width:0;min-height:46px;padding:2px 3px;border-color:#91ad95;background:#e8f0e4}
+  .record-quick-list strong{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+  .record-quick-list span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:#5b6e5d}
+  .nearby-moves{display:none!important}
+  .branch-box{position:static!important;display:flex;align-items:center;gap:7px;left:auto;right:auto;bottom:auto;width:100%;height:30px;min-height:30px;padding:0 6px!important;border:1px solid #b5c8b3!important;box-shadow:none;overflow:hidden}
+  .branch-box[hidden]{display:none!important}
+  .branch-box>span{margin:0!important;flex:0 0 auto;font-size:10px!important;line-height:1.2}
+  .branch-box select{flex:1;min-width:0;width:auto;height:28px!important;min-height:28px!important;font-size:12px!important;padding:0 5px}
+  .promotion-bar{bottom:52px}
+}

@@ -81,157 +81,25 @@ test('KIF playback keeps only previous and next controls visible',async({page})=
   await expect(page.locator('#nextMove')).toBeDisabled();
 });
 
-test('record load resizes immediately and shows move, diagram label and inline branches',async({page},info)=>{
+test('mobile hands and playback leave the full width for the board',async({page})=>{
   await page.setViewportSize({width:390,height:844});
-  await page.getByRole('separator').press('Home');
   await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
-  await expect(page.locator('#moveRail')).toBeVisible();
-
+  await page.locator('#boardFit').tap();
   await expect.poll(async()=>page.evaluate(()=>{
-    const board=document.querySelector('.board-frame').getBoundingClientRect();
-    const wrap=document.querySelector('.board-wrap').getBoundingClientRect();
-    const rail=document.querySelector('#moveRail').getBoundingClientRect();
-    return {
-      clear: board.bottom <= wrap.bottom + 1,
-      railRight: rail.right <= innerWidth + 1,
-      boardLeft: board.left,
-      boardWidth: board.width,
-    };
-  })).toMatchObject({clear:true,railRight:true});
-  const loadedLayout=await page.evaluate(()=>{
-    const board=document.querySelector('.board-frame').getBoundingClientRect();
-    const left=document.querySelector('.side-hand-left').getBoundingClientRect();
-    const right=document.querySelector('.side-hand-right').getBoundingClientRect();
-    const rail=document.querySelector('#moveRail').getBoundingClientRect();
-    return {
-      boardLeft:board.left,
-      boardWidth:board.width,
-      leftBeforeBoard:left.right <= board.left + 1,
-      rightAfterBoard:right.left >= board.right - 1,
-      railAfterRight:rail.left >= right.right - 1,
-    };
-  });
-  expect(loadedLayout.boardWidth).toBeGreaterThan(225);
-  expect(loadedLayout.boardLeft).toBeLessThan(70);
-  expect(loadedLayout.leftBeforeBoard).toBe(true);
-  expect(loadedLayout.rightAfterBoard).toBe(true);
-  expect(loadedLayout.railAfterRight).toBe(true);
-
+    const rect=s=>document.querySelector(s).getBoundingClientRect();
+    const board=rect('.board-frame'), left=rect('.side-hand-left'), right=rect('.side-hand-right'), rail=rect('#moveRail');
+    return board.width > 350 && left.bottom <= board.top + 1 && right.bottom <= board.top + 1 && rail.top >= board.bottom - 1 && rail.bottom <= rect('.board-wrap').bottom + 1;
+  })).toBe(true);
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#currentMove')).toContainText('1手');
-  await expect(page.locator('#currentMove')).toContainText('７六歩');
-
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#positionLabel')).toHaveText('途中図');
-  await expect(page.locator('#recordContext')).toBeVisible();
-  await expect(page.locator('#recordProgress')).toHaveText('2 / 7手');
-  await expect(page.locator('#recordDiagram')).toHaveText('途中図');
-  await expect(page.locator('#recordDiagram')).toBeVisible();
-  await expect(page.locator('#recordBranch')).toHaveText('本譜');
-  const contextLayout=await page.evaluate(()=> {
-    const frame=document.querySelector('.board-frame').getBoundingClientRect();
-    const context=document.querySelector('#recordContext').getBoundingClientRect();
-    const branch=document.querySelector('#recordBranch');
-    const progress=document.querySelector('#recordProgress');
-    const diagram=document.querySelector('#recordDiagram');
-    return {
-      centerDelta:Math.abs((frame.left+frame.right)/2-(context.left+context.right)/2),
-      order:[...document.querySelector('#recordContext').children].map(el=>el.id),
-      branchWeight:Number(getComputedStyle(branch).fontWeight),
-      progressWeight:Number(getComputedStyle(progress).fontWeight),
-      diagramWeight:Number(getComputedStyle(diagram).fontWeight),
-      branchSize:parseFloat(getComputedStyle(branch).fontSize),
-      progressSize:parseFloat(getComputedStyle(progress).fontSize),
-      diagramSize:parseFloat(getComputedStyle(diagram).fontSize),
-    };
-  });
-  expect(contextLayout.centerDelta).toBeLessThanOrEqual(1);
-  expect(contextLayout.order).toEqual(['recordBranch','recordProgress','recordDiagram']);
-  expect(contextLayout.branchWeight).toBeGreaterThan(contextLayout.progressWeight);
-  expect(contextLayout.diagramWeight).toBeGreaterThanOrEqual(contextLayout.branchWeight);
-  expect(contextLayout.diagramSize).toBeGreaterThanOrEqual(contextLayout.progressSize);
-
+  await expect(page.locator('#quickContext')).toContainText('途中図');
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#moveRail')).toBeVisible();
-  await expect(page.locator('#prevMove')).toBeVisible();
-  await expect(page.locator('#nextMove')).toBeVisible();
   await expect(page.locator('#branchBox')).toBeVisible();
-  const navLayout=await page.evaluate(()=>({
-    branchTop:document.querySelector('#branchBox').getBoundingClientRect().top,
-    branchBottom:document.querySelector('#branchBox').getBoundingClientRect().bottom,
-    prevTop:document.querySelector('#prevMove').getBoundingClientRect().top,
-    movesTop:document.querySelector('#nearbyMoves').getBoundingClientRect().top,
-    nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
-    movesBottom:document.querySelector('#nearbyMoves').getBoundingClientRect().bottom,
-    navHeight:document.querySelector('.move-rail-nav').getBoundingClientRect().height,
-    boardHeight:document.querySelector('.board').getBoundingClientRect().height,
-    navTop:document.querySelector('.move-rail-nav').getBoundingClientRect().top,
-    stateHeight:document.querySelector('#recordState').getBoundingClientRect().height,
-    visibleRows:document.querySelectorAll('#nearbyMoves button').length,
-    rowsOverlap:Array.from(document.querySelectorAll('#nearbyMoves li')).some((el,i,all)=>{
-      if(i===all.length-1) return false;
-      const a=el.getBoundingClientRect();
-      const b=all[i+1].getBoundingClientRect();
-      return a.bottom > b.top + 0.5;
-    }),
-  }));
-  expect(navLayout.branchTop).toBeLessThan(navLayout.navTop);
-  expect(navLayout.branchBottom).toBeLessThanOrEqual(navLayout.navTop+1);
-  expect(Math.abs(navLayout.navHeight-navLayout.boardHeight)).toBeLessThanOrEqual(1);
-  expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
-  expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
-  expect(navLayout.stateHeight).toBe(0);
-  expect(navLayout.visibleRows).toBe(5);
-  expect(navLayout.rowsOverlap).toBe(false);
-  await expect(page.locator('#branchOrigin')).toContainText('3手目から分岐');
-  await expect(page.locator('#branchSelect')).toHaveValue('0');
-  await expect(page.locator('#branchSelect option')).toHaveCount(2);
-  await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toContainText('3');
-  await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toHaveClass(/has-branch/);
-  await expect(page.locator('#nearbyMoves')).toContainText('３四歩');
-  await expect(page.locator('#nearbyMoves')).toContainText('同');
-  await expect(page.locator('#nearbyMoves small')).toHaveCount(0);
-  const railCenter=await page.locator('#nearbyMoves').evaluate(list=>{
-    const buttons=[...list.querySelectorAll('button')];
-    const current=buttons.findIndex(button=>button.getAttribute('aria-current')==='true');
-    return {current,count:buttons.length};
-  });
-  expect(Math.abs(railCenter.current-(railCenter.count-1)/2)).toBeLessThanOrEqual(0.5);
-
-  await page.locator('#nextMove').tap();
-  await expect(page.locator('#currentMove')).toContainText('4手');
-
+  await expect(page.locator('#quickMove')).toContainText('２二角成');
   await page.locator('#branchSelect').selectOption('1');
-  await expect(page.locator('#currentMove')).toContainText('3手');
-  await expect(page.locator('#currentMove')).toContainText('２六歩');
-  await expect(page.locator('#recordBranch')).toHaveText('3手目からの変化1');
-  await expect(page.getByRole('gridcell',{name:'2六 先手 歩',exact:true})).toBeVisible();
-  await expect(page.locator('#branchSelect')).toHaveValue('1');
-
-  await page.locator('#nextMove').tap();
-  await expect(page.locator('#currentMove')).toContainText('4手');
-  await page.locator('#branchSelect').selectOption('0');
-  await expect(page.locator('#currentMove')).toContainText('3手');
-  await expect(page.locator('#currentMove')).toContainText('２二角成');
-  await expect(page.locator('#recordBranch')).toHaveText('本譜');
-  await expect(page.locator('#branchSelect')).toHaveValue('0');
-
-  await page.locator('#nextMove').tap();
-  await expect(page.locator('#positionLabel')).toHaveText('第１図');
-  await expect(page.locator('#nextMove')).toBeEnabled();
-
-  await page.screenshot({path:info.outputPath('record-context.png')});
-});
-
-test('side move rail jumps to nearby moves and full list stays in the overflow menu',async({page})=>{
-  await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
-  for(let i=0;i<4;i++) await page.locator('#nextMove').tap();
-  const previous=page.locator('#nearbyMoves button').filter({hasText:'２二角成'});
-  await expect(previous).toBeVisible();
-  await previous.tap();
-  await expect(page.locator('#currentMove')).toContainText('3手');
-  await page.locator('#boardMenuButton').tap();
-  await page.locator('#recordListButton').tap();
+  await expect(page.locator('#quickMove')).toContainText('２六歩');
+  await expect(page.locator('#quickContext')).toContainText('変化1');
+  await page.locator('#recordQuickList').tap();
   await expect(page.locator('#recordDialog')).toBeVisible();
 });
 

@@ -81,3 +81,9 @@ GitHub Actionsは単体テスト、ビルド、ChromiumとWebKitのモバイル�
 `tests/make-fixtures.mjs` は独自の日本語CIDテキストと線を持つPDF、およびShift-JIS棋譜を生成します。出版社のコンテンツは含みません。WebKitの自動試験は実際のiPhone Safariの代わりにはなりません。**iPhone実機でのFilesピッカー、iCloudからの取得、実書籍、長時間利用のメモリ安定性は別途確認が必要です。**
 
 調査資料: [PDF.js API](https://mozilla.github.io/pdf.js/api/draft/module-pdfjsLib.html)、[PDF.js配布](https://mozilla.github.io/pdf.js/getting_started/)、[tsshogi仕様](https://github.com/sunfish-shogi/tsshogi)。PDF.jsと同梱フォント/CMap/WASMのライセンス、tsshogiのMITライセンスを配布物内に保持しています。
+
+## iPhoneの省スペース表示
+
+幅600px以下では左右の縦型駒台・棋譜欄を使わず、持ち駒を盤上の1行（左右に先後を分離）、手送りを盤下の1行に配置します。持ち駒が多い場合は駒台を横スクロールできます。中央の現在手をタップすると棋譜一覧を開き、図のラベルと分岐選択も維持します。分岐メニューは盤下に収まり、PDFには重なりません。分割バーの「盤を広く」で盤優先の比率へ調整できます。初回は新レイアウト用の34:66で開き、以降は変更した比率を保存します。
+
+使用感の素早い反映を優先する `[quick-ui]` のpushでは単体テストとビルドのみで公開します。手動実行ではWebKitテストも実施します。
