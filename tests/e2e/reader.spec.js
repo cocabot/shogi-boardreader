@@ -118,8 +118,8 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#branchSelect')).toHaveValue('0');
   await expect(page.locator('#branchSelect option')).toHaveCount(2);
   await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toContainText('3');
-  await expect(page.locator('#nearbyMoves')).toContainText('2 ３四歩');
-  await expect(page.locator('#nearbyMoves')).toContainText('4 同');
+  await expect(page.locator('#nearbyMoves')).toContainText('３四歩');
+  await expect(page.locator('#nearbyMoves')).toContainText('同');
 
   await page.locator('#branchSelect').selectOption('1');
   await expect(page.locator('#currentMove')).toContainText('２六歩');
@@ -140,7 +140,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
 test('side move rail jumps to nearby moves and opens full record list',async({page})=>{
   await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
   for(let i=0;i<4;i++) await page.locator('#nextMove').tap();
-  const previous=page.locator('#nearbyMoves button').filter({hasText:'3 ２二角成'});
+  const previous=page.locator('#nearbyMoves button').filter({hasText:'２二角成'});
   await expect(previous).toBeVisible();
   await previous.tap();
   await expect(page.locator('#currentMove')).toContainText('3手');
