@@ -11,6 +11,7 @@ const splitHalf = $("#splitHalf");
 
 const boardEl = $("#board");
 const boardWrap = $(".board-wrap");
+const boardLayout = $(".board-layout");
 const moveRail = $("#moveRail");
 const senteHandEl = $("#senteHand");
 const goteHandEl = $("#goteHand");
@@ -600,8 +601,8 @@ function sizeBoard() {
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
   const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width + 4 : 0;
   const size = Math.max(0, Math.floor(Math.min(
-    boardWrap.clientWidth - railWidth - dx,
-    boardWrap.clientHeight - dy,
+    boardLayout.clientWidth - railWidth - dx,
+    boardLayout.clientHeight - dy,
     480,
   )));
   boardWrap.style.setProperty('--board-pixels', `${size}px`);
@@ -616,6 +617,7 @@ const resizeObserver = new ResizeObserver(() => {
 resizeObserver.observe(readerPanel);
 resizeObserver.observe(boardPanel);
 resizeObserver.observe(boardWrap);
+resizeObserver.observe(boardLayout);
 window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
 
 window.addEventListener("orientationchange", () => {
@@ -708,6 +710,9 @@ function renderNearbyMoves() {
     list.append(row);
   }
 
+  requestAnimationFrame(() => {
+    list.querySelector('[aria-current="true"]')?.scrollIntoView({block:'center'});
+  });
 }
 
 function updatePlayback() {
