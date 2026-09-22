@@ -20,7 +20,7 @@ async function listFiles(dir) {
   const paths = await Promise.all(entries.map(entry => entry.isDirectory() ? listFiles(`${dir}/${entry.name}`) : [`${dir}/${entry.name}`]));
   return paths.flat().sort();
 }
-const files = await listFiles('dist');
+const files = (await listFiles('dist')).filter(file => !file.split('/').some(part => part.startsWith('.')));
 const template = await readFile('service-worker.js','utf8');
 const hash = createHash('sha256').update(template);
 for (const file of files) hash.update(file).update(await readFile(file));
