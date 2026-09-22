@@ -663,7 +663,7 @@ function updateBranchSwitcher() {
     box.hidden = true;
     return;
   }
-  $('#branchOrigin').textContent = `${context.node.ply}手目から分岐`;
+  $('#branchOrigin').textContent = `↳ ${context.node.ply}手目から分岐`;
   for (let branch = context.first; branch; branch = branch.branch) {
     const option = document.createElement('option');
     option.value = String(branch.branchIndex);
@@ -695,11 +695,19 @@ function renderNearbyMoves() {
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('aria-current', String(node === record.current));
-    if (node.prev?.next?.branch) button.classList.add('has-branch');
+    const isBranchPoint = Boolean(node.prev?.next?.branch);
+    const diagramLabel = positionLabelFor(node);
+    if (isBranchPoint) button.classList.add('has-branch');
+    if (diagramLabel) button.classList.add('has-diagram');
     const strong = document.createElement('strong');
     strong.textContent = node.ply ? `${node.ply} ${node.displayText}` : '0 開始局面';
     const small = document.createElement('small');
-    small.textContent = positionLabelFor(node) || (node === record.current ? '現在' : node.ply < record.current.ply ? '前' : '次');
+    if (diagramLabel) {
+      small.className = 'diagram-label';
+      small.textContent = diagramLabel;
+    } else {
+      small.textContent = node === record.current ? '現在' : node.ply < record.current.ply ? '前' : '次';
+    }
     button.append(strong, small);
     button.onclick = () => {
       record.gotoNode(node);
@@ -751,16 +759,9 @@ $('#branchSelect').onchange = () => {
   if (!context) return;
   const wanted = Number($('#branchSelect').value);
   if (wanted === context.node.branchIndex) return;
-  const desiredPly = record.current.ply;
   let target = context.first;
   while (target && target.branchIndex !== wanted) target = target.branch;
   if (!target) return;
-  while (target.next && target.ply < desiredPly) {
-    let next = target.next;
-    while (next && !next.activeBranch) next = next.branch;
-    if (!next) break;
-    target = next;
-  }
   record.gotoNode(target);
   showRecordPosition();
 };
