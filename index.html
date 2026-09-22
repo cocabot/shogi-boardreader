@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="将棋BoardReader" />
   <title>将棋 BoardReader</title>
   <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icon-180.png" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
@@ -107,10 +108,18 @@
         <button id="reset" type="button">初期局面</button>
       </div>
     </section>
+    <section class="menu-section">
+      <h3>アプリとして使う</h3>
+      <p class="install-help">Safariの共有メニューから「ホーム画面に追加」。追加したアイコンから起動できます。</p>
+      <p id="offlineStatus" class="install-help" role="status">オフライン準備を確認中…</p>
+      <button id="updateApp" type="button" hidden>更新して再起動</button>
+      <p class="install-help">初回はネット接続したまま準備完了をお待ちください。PDF・棋譜は端末内で処理します。再起動後はファイルを開き直してください。</p>
+    </section>
   </dialog>
   <dialog id="sceneDialog" aria-labelledby="sceneTitle"><header><h2 id="sceneTitle">要所の局面</h2><button id="closeScene">閉じる</button></header><div id="sceneChoices"></div></dialog>
   <dialog id="recordDialog" aria-labelledby="recordTitle"><header><h2 id="recordTitle">棋譜一覧</h2><button id="closeRecord" aria-label="棋譜一覧を閉じる">閉じる</button></header><p id="recordName"></p><p id="recordMessage" role="status"></p><div class="record-actions"><button id="studyPosition">この局面で検討</button><button id="resumeRecord" hidden>棋譜に戻る</button><button id="mainLine">本譜に戻る</button></div><p class="record-guide">手をタップして移動。分岐のある手は「変化」から選べます。</p><ol id="moveList"></ol></dialog>
   <dialog id="messageDialog" aria-labelledby="messageTitle"><h2 id="messageTitle">棋譜を開けませんでした</h2><p id="messageText"></p><button id="closeMessage">閉じる</button></dialog>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./offline.js"></script>
 </body>
 </html>
