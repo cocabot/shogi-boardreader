@@ -88,8 +88,20 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect.poll(async()=>page.evaluate(()=>{
     const board=document.querySelector('.board-frame').getBoundingClientRect();
     const controls=document.querySelector('.playback').getBoundingClientRect();
-    return board.bottom <= controls.top + 1;
-  })).toBe(true);
+    const rail=document.querySelector('#moveRail').getBoundingClientRect();
+    return {
+      clear: board.bottom <= controls.top + 1,
+      railRight: rail.right <= innerWidth + 1,
+      boardLeft: board.left,
+      boardWidth: board.width,
+    };
+  })).toMatchObject({clear:true,railRight:true});
+  const loadedLayout=await page.evaluate(()=>({
+    boardLeft:document.querySelector('.board-frame').getBoundingClientRect().left,
+    boardWidth:document.querySelector('.board-frame').getBoundingClientRect().width,
+  }));
+  expect(loadedLayout.boardWidth).toBeGreaterThan(240);
+  expect(loadedLayout.boardLeft).toBeLessThan(70);
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#currentMove')).toContainText('1手');
@@ -100,9 +112,14 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#positionLabel')).toBeVisible();
 
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#branchSelect')).toBeVisible();
+  await expect(page.locator('#moveRail')).toBeVisible();
+  await expect(page.locator('#branchBox')).toBeVisible();
+  await expect(page.locator('#branchOrigin')).toHaveText('3手目から分岐');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
   await expect(page.locator('#branchSelect option')).toHaveCount(2);
+  await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toContainText('3');
+  await expect(page.locator('#nearbyMoves')).toContainText('2 ３四歩');
+  await expect(page.locator('#nearbyMoves')).toContainText('4 同');
 
   await page.locator('#branchSelect').selectOption('1');
   await expect(page.locator('#currentMove')).toContainText('２六歩');
@@ -118,6 +135,17 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#nextMove')).toBeEnabled();
 
   await page.screenshot({path:info.outputPath('record-context.png')});
+});
+
+test('side move rail jumps to nearby moves and opens full record list',async({page})=>{
+  await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
+  for(let i=0;i<4;i++) await page.locator('#nextMove').tap();
+  const previous=page.locator('#nearbyMoves button').filter({hasText:'3 ２二角成'});
+  await expect(previous).toBeVisible();
+  await previous.tap();
+  await expect(page.locator('#currentMove')).toContainText('3手');
+  await page.locator('#railRecordList').tap();
+  await expect(page.locator('#recordDialog')).toBeVisible();
 });
 
 for(const name of ['sample.ki2','sample.csa','shift-jis.kif']){
