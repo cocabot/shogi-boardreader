@@ -286,3 +286,83 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     font-size:8px;
   }
 }
+
+
+/* Record context: keep controls compact while showing move, diagram label and branch. */
+.playback{
+  flex:0 0 44px;
+  min-height:44px;
+  grid-template-columns:68px minmax(0,1fr) 68px;
+  gap:6px;
+  align-items:stretch;
+  max-width:430px;
+}
+.playback button{
+  min-height:44px;
+  height:44px;
+  padding:0 8px;
+  font-size:12px;
+}
+.playback-info{
+  min-width:0;
+  display:grid;
+  grid-template-rows:22px 20px;
+  align-items:center;
+  text-align:center;
+}
+.playback-info strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-family:var(--piece-font);
+  font-size:13px;
+  font-weight:600;
+  color:#31483b;
+}
+.playback-meta{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:10px;
+  color:#657064;
+}
+.playback-meta #positionLabel{
+  max-width:92px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding:1px 5px;
+  border-radius:999px;
+  background:#e2eadc;
+  color:#48604f;
+}
+.playback-meta #moveCount{
+  min-width:auto;
+  font-size:10px;
+  color:#657064;
+}
+.playback-meta select{
+  min-width:58px;
+  max-width:86px;
+  height:20px;
+  min-height:20px;
+  padding:0 16px 0 5px;
+  border:1px solid #cbd2c7;
+  border-radius:999px;
+  background:#f8faf5;
+  color:#405448;
+  font-size:10px;
+}
+@media(max-width:360px){
+  .playback{
+    grid-template-columns:60px minmax(0,1fr) 60px;
+    gap:4px;
+  }
+  .playback-info strong{font-size:12px}
+  .playback-meta{gap:4px}
+  .playback-meta #positionLabel{max-width:72px}
+  .playback-meta select{max-width:72px}
+}
