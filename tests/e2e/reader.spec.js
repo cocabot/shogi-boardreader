@@ -116,6 +116,28 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#recordDiagram')).toHaveText('途中図');
   await expect(page.locator('#recordDiagram')).toBeVisible();
   await expect(page.locator('#recordBranch')).toHaveText('本譜');
+  const contextLayout=await page.evaluate(()=> {
+    const frame=document.querySelector('.board-frame').getBoundingClientRect();
+    const context=document.querySelector('#recordContext').getBoundingClientRect();
+    const branch=document.querySelector('#recordBranch');
+    const progress=document.querySelector('#recordProgress');
+    const diagram=document.querySelector('#recordDiagram');
+    return {
+      centerDelta:Math.abs((frame.left+frame.right)/2-(context.left+context.right)/2),
+      order:[...document.querySelector('#recordContext').children].map(el=>el.id),
+      branchWeight:Number(getComputedStyle(branch).fontWeight),
+      progressWeight:Number(getComputedStyle(progress).fontWeight),
+      diagramWeight:Number(getComputedStyle(diagram).fontWeight),
+      branchSize:parseFloat(getComputedStyle(branch).fontSize),
+      progressSize:parseFloat(getComputedStyle(progress).fontSize),
+      diagramSize:parseFloat(getComputedStyle(diagram).fontSize),
+    };
+  });
+  expect(contextLayout.centerDelta).toBeLessThanOrEqual(1);
+  expect(contextLayout.order).toEqual(['recordBranch','recordProgress','recordDiagram']);
+  expect(contextLayout.branchWeight).toBeGreaterThan(contextLayout.progressWeight);
+  expect(contextLayout.diagramWeight).toBeGreaterThanOrEqual(contextLayout.branchWeight);
+  expect(contextLayout.diagramSize).toBeGreaterThan(contextLayout.progressSize);
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#moveRail')).toBeVisible();
@@ -123,6 +145,8 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#nextMove')).toBeVisible();
   await expect(page.locator('#branchBox')).toBeVisible();
   const navLayout=await page.evaluate(()=>({
+    branchTop:document.querySelector('#branchBox').getBoundingClientRect().top,
+    branchBottom:document.querySelector('#branchBox').getBoundingClientRect().bottom,
     prevTop:document.querySelector('#prevMove').getBoundingClientRect().top,
     movesTop:document.querySelector('#nearbyMoves').getBoundingClientRect().top,
     nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
@@ -136,10 +160,12 @@ test('record load resizes immediately and shows move, diagram label and inline b
       return a.bottom > b.top + 0.5;
     }),
   }));
+  expect(navLayout.branchTop).toBeLessThan(navLayout.prevTop);
+  expect(navLayout.branchBottom).toBeLessThanOrEqual(navLayout.prevTop+1);
   expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
   expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
   expect(navLayout.stateHeight).toBe(0);
-  expect(navLayout.visibleRows).toBeGreaterThanOrEqual(5);
+  expect(navLayout.visibleRows).toBe(5);
   expect(navLayout.rowsOverlap).toBe(false);
   await expect(page.locator('#branchOrigin')).toContainText('3手目から分岐');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
