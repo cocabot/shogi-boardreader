@@ -504,3 +504,13 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
   .branch-box{padding:3px}
   .branch-box>span{font-size:8px}
 }
+
+
+/* Fit five nearby moves beside a half-screen board. */
+.nearby-moves button{
+  min-height:28px;
+  padding-block:3px;
+}
+@media(max-width:370px){
+  .nearby-moves button{min-height:26px}
+}
