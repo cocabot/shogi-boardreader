@@ -687,8 +687,8 @@ function renderNearbyMoves() {
   let currentIndex = moves.indexOf(record.current);
   if (currentIndex < 0) currentIndex = moves.findIndex(node => node.ply === record.current.ply && node.branchIndex === record.current.branchIndex);
   if (currentIndex < 0) currentIndex = 0;
-  const start = Math.max(0, currentIndex - 3);
-  const end = Math.min(moves.length, currentIndex + 4);
+  const start = Math.max(0, currentIndex - 5);
+  const end = Math.min(moves.length, currentIndex + 6);
   for (let i = start; i < end; i++) {
     const node = moves[i];
     const row = document.createElement('li');
