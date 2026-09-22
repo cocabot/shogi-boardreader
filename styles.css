@@ -1041,3 +1041,169 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     min-height:25px!important;
   }
 }
+
+
+/* Five-move rail + board-centered record context. */
+.board-wrap{
+  display:grid!important;
+  place-items:center;
+  overflow:hidden;
+}
+.board-layout{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  min-width:0;
+  min-height:0;
+}
+.board-column{
+  flex:0 0 auto;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:2px;
+}
+.record-context{
+  width:100%;
+  min-height:24px;
+  flex:0 0 24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 2px;
+  font-size:10.5px;
+  line-height:1;
+  color:#69736b;
+}
+#recordBranch{
+  max-width:150px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#eee2cc;
+  color:#6f5731;
+  font-size:10.5px;
+  font-weight:700;
+}
+#recordProgress{
+  flex:0 0 auto;
+  font-size:10.5px;
+  font-weight:500;
+  color:#6a746c;
+}
+#recordDiagram{
+  max-width:100px;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#bcd8bd;
+  color:#174b2d;
+  border:1px solid #8fbd96;
+  font-size:11.5px;
+  font-weight:800;
+  letter-spacing:.02em;
+  box-shadow:inset 0 0 0 1px #ffffff80;
+}
+
+.move-rail{
+  flex:0 0 88px;
+  width:88px;
+  height:min(100%,calc(var(--board-pixels,270px) + 26px));
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  overflow:hidden;
+}
+.branch-box{
+  order:0;
+  flex:0 0 auto;
+  padding:3px 4px;
+}
+.rail-prev{order:1}
+.nearby-moves{
+  order:2;
+  flex:1 1 auto;
+  min-height:0;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center!important;
+  gap:3px;
+  overflow:hidden!important;
+}
+.rail-next{order:3}
+.nearby-moves li{
+  flex:0 0 auto!important;
+  min-height:0!important;
+}
+.nearby-moves button{
+  min-height:29px!important;
+  height:29px!important;
+  padding:2px 5px!important;
+  display:flex!important;
+  align-items:center;
+}
+.nearby-moves button strong{
+  width:100%;
+  font-size:10.5px;
+  line-height:1;
+}
+.nearby-moves button small{
+  display:none!important;
+}
+.nearby-moves button[aria-current=true]{
+  border-color:#5b8e6a!important;
+  background:#d5e8d9!important;
+  box-shadow:inset 0 0 0 1px #7fa98a!important;
+}
+.nearby-moves button.has-branch{
+  border-left:3px solid #9a7940!important;
+  background:#f4edd9;
+}
+.branch-box>span{
+  font-size:8.5px;
+}
+.branch-box select{
+  height:23px;
+  min-height:23px;
+  font-size:9.5px;
+}
+
+@media(max-width:370px){
+  .record-context{
+    min-height:22px;
+    flex-basis:22px;
+    gap:4px;
+    font-size:9.5px;
+  }
+  #recordBranch{
+    max-width:118px;
+    padding:2px 5px;
+    font-size:9.5px;
+  }
+  #recordProgress{
+    font-size:9.5px;
+  }
+  #recordDiagram{
+    max-width:76px;
+    padding:2px 6px;
+    font-size:10.5px;
+  }
+  .move-rail{
+    flex-basis:78px;
+    width:78px;
+  }
+  .nearby-moves button{
+    min-height:27px!important;
+    height:27px!important;
+  }
+  .nearby-moves button strong{
+    font-size:9.5px;
+  }
+}
