@@ -50,17 +50,18 @@
         <div class="board-layout">
           <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
           <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
-            <button id="railRecordList" class="move-rail-title" type="button">棋譜</button>
+            <button id="railRecordList" class="move-rail-title" type="button">棋譜一覧</button>
+            <button id="prevMove" class="rail-step rail-prev" disabled>‹ 前の手</button>
             <div id="branchBox" class="branch-box" hidden>
               <span id="branchOrigin"></span>
               <select id="branchSelect" aria-label="本譜・変化を切り替え"></select>
             </div>
             <ol id="nearbyMoves" class="nearby-moves"></ol>
+            <button id="nextMove" class="rail-step rail-next" disabled>次の手 ›</button>
           </aside>
         </div>
       </div>
-      <div class="playback" aria-label="棋譜再生">
-        <button id="prevMove" disabled>‹ 前</button>
+      <div class="playback playback-summary" aria-label="現在の指し手">
         <div class="playback-info">
           <strong id="currentMove" aria-live="polite">開始局面</strong>
           <div class="playback-meta">
@@ -68,7 +69,6 @@
             <span id="moveCount">0 / 0 手</span>
           </div>
         </div>
-        <button id="nextMove" disabled>次 ›</button>
       </div>
       <div id="promotionBar" class="promotion-bar" hidden><span>成りますか？</span><button id="promoteYes">成る</button><button id="promoteNo">不成</button></div>
     </section>
