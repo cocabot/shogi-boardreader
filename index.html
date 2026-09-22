@@ -27,15 +27,17 @@
           <button id="fitWidth" type="button">幅</button>
           <button id="zoomIn" type="button" aria-label="拡大">＋</button>
         </div>
+        <details class="pdf-help pdf-toolbar-help">
+          <summary aria-label="PDF表示設定">•••</summary>
+          <div><label><input type="checkbox" id="pdfCompat" /> 文字互換表示</label><p>文字が欠ける場合に切り替えてください。埋め込みフォントを輪郭で描画します。</p><a id="nativePdf" hidden target="_blank" rel="noopener">Safariで開く</a><small>元のPDFを端末内で開きます。</small></div>
+        </details>
+        <span id="pdfStatus" class="visually-hidden" role="status">端末内のPDFを選択</span>
       </header>
       <div id="pdfStage" class="pdf-stage">
         <div id="pdfEmpty" class="empty-state"><span class="eyebrow">SHOGI BOARDREADER</span><strong>本をひらく。手をならべる。</strong><span>上に将棋本、下にあなたの研究盤。</span><small>PDF・棋譜は端末内で処理し、送信しません。</small></div>
         <canvas id="pdfCanvas" hidden aria-label="PDFページ"></canvas>
       </div>
-      <div class="pdf-info">
-        <span id="pdfStatus" role="status">端末内のPDFを選択</span>
-        <details class="pdf-help"><summary>表示設定</summary><div><label><input type="checkbox" id="pdfCompat" /> 文字互換表示</label><p>文字が欠ける場合に切り替えてください。埋め込みフォントを輪郭で描画します。</p><a id="nativePdf" hidden target="_blank" rel="noopener">Safariで開く</a><small>元のPDFを端末内で開きます。未埋め込みの特殊な駒文字は復元できない場合があります。</small></div></details>
-      </div>
+
     </section>
     <div id="splitter" class="splitter" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="上下の表示割合を変更" aria-valuemin="20" aria-valuemax="70" aria-valuenow="50">
       <span class="splitter-grip"></span>
@@ -50,7 +52,6 @@
         <div class="board-layout">
           <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
           <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
-            <button id="railRecordList" class="move-rail-title" type="button">棋譜一覧</button>
             <button id="prevMove" class="rail-step rail-prev" disabled>‹ 前の手</button>
             <div id="branchBox" class="branch-box" hidden>
               <span id="branchOrigin"></span>
@@ -61,7 +62,7 @@
           </aside>
         </div>
       </div>
-      <div class="playback playback-summary" aria-label="現在の指し手">
+      <div class="playback playback-summary visually-hidden" aria-label="現在の指し手">
         <div class="playback-info">
           <strong id="currentMove" aria-live="polite">開始局面</strong>
           <div class="playback-meta">
