@@ -716,12 +716,13 @@ function renderNearbyMoves() {
     row.append(button);
     list.append(row);
   }
+  requestAnimationFrame(() => {
+    list.querySelector('[aria-current="true"]')?.scrollIntoView({block:'nearest'});
+  });
 }
 
 function updatePlayback() {
   const ply = record?.current.ply ?? 0;
-  const playbackEl = $('.playback');
-  playbackEl.hidden = !record;
   $('#moveCount').textContent = record && playback ? `${ply} / ${record.length} 手` : '自由盤';
   $('#currentMove').textContent = record && playback
     ? (ply === 0 ? '開始局面' : `${ply}手 ${record.current.displayText}`)
@@ -777,6 +778,7 @@ $('#recordFile').addEventListener('change', async (event) => {
     record = parsed; names = playerNames(record);
     history = []; future = [];
     $('#recordName').textContent = file.name;
+    $('#boardMenuDialog')?.close();
     showRecordPosition();
   } catch (error) {
     if (id !== recordLoadID) return;
@@ -824,6 +826,7 @@ function renderRecordList() {
 }
 function openRecordList() {
   if (!record) return;
+  $('#boardMenuDialog')?.close();
   renderRecordList();
   $('#recordDialog').showModal();
   $('#moveList [aria-current="true"]')?.scrollIntoView({block:'nearest'});
