@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#17130f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="将棋BoardReader" />
+  <title>将棋 BoardReader</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app" class="app">
+    <section id="readerPanel" class="panel reader-panel" aria-label="PDFリーダー">
+      <header class="toolbar reader-toolbar">
+        <label class="file-button">
+          <input id="pdfFile" type="file" accept="application/pdf,.pdf" />
+          <span>PDFを開く</span>
+        </label>
+
+        <div class="page-controls" aria-label="ページ操作">
+          <button id="prevPage" class="icon-button" type="button" aria-label="前のページ">‹</button>
+          <label class="page-label">
+            <input id="pageNumber" type="number" min="1" value="1" inputmode="numeric" aria-label="ページ番号" />
+            <span>/ <span id="pageCount">—</span></span>
+          </label>
+          <button id="nextPage" class="icon-button" type="button" aria-label="次のページ">›</button>
+        </div>
+
+        <div class="zoom-controls" aria-label="拡大縮小">
+          <button id="zoomOut" class="icon-button" type="button" aria-label="縮小">−</button>
+          <button id="fitWidth" class="text-button" type="button">幅</button>
+          <button id="zoomIn" class="icon-button" type="button" aria-label="拡大">＋</button>
+        </div>
+      </header>
+
+      <div id="pdfStage" class="pdf-stage">
+        <div id="pdfEmpty" class="empty-state">
+          <strong>上半分に将棋本</strong>
+          <span>「PDFを開く」から端末内のPDFを選んでください。</span>
+          <small>PDFはサーバーに送信せず、この端末内で表示します。</small>
+        </div>
+        <canvas id="pdfCanvas" hidden aria-label="PDFページ"></canvas>
+      </div>
+    </section>
+
+    <div id="splitter" class="splitter" role="separator" aria-orientation="horizontal" aria-label="上下の表示割合を変更">
+      <span class="splitter-grip"></span>
+      <button id="splitHalf" class="split-half" type="button" aria-label="50対50に戻す">50:50</button>
+    </div>
+
+    <section id="boardPanel" class="panel board-panel" aria-label="将棋盤">
+      <div id="goteHand" class="hand hand-top" aria-label="後手の持ち駒"></div>
+
+      <div class="board-wrap">
+        <div id="board" class="board" role="grid" aria-label="将棋盤"></div>
+      </div>
+
+      <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
+
+      <div id="promotionBar" class="promotion-bar" hidden>
+        <span>成りますか？</span>
+        <button id="promoteYes" type="button">成る</button>
+        <button id="promoteNo" type="button">不成</button>
+      </div>
+
+      <footer class="board-controls">
+        <button id="undo" type="button">↶ 待った</button>
+        <button id="redo" type="button">↷ やり直し</button>
+        <button id="flip" type="button">⇅ 反転</button>
+        <button id="reset" type="button">初期局面</button>
+      </footer>
+    </section>
+  </main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
