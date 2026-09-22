@@ -130,6 +130,7 @@ export function setupPdfReader() {
     const selected = input.files?.[0];
     input.value = '';
     if (!selected) return;
+    input.closest('dialog')?.close();
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     blobUrl = URL.createObjectURL(selected);
     native.href = blobUrl;
