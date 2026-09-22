@@ -514,3 +514,136 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
 @media(max-width:370px){
   .nearby-moves button{min-height:26px}
 }
+
+
+/* Move navigation lives in the side rail so the board gets more vertical room. */
+.playback.playback-summary{
+  flex:0 0 30px;
+  min-height:30px;
+  display:block;
+  max-width:430px;
+}
+.playback-summary .playback-info{
+  height:30px;
+  grid-template-rows:17px 13px;
+}
+.playback-summary .playback-info strong{
+  font-size:12px;
+  line-height:17px;
+}
+.playback-summary .playback-meta{
+  min-height:13px;
+  line-height:13px;
+}
+.playback-summary .playback-meta #positionLabel{
+  max-width:120px;
+  padding:0 5px;
+  background:#d9e5d6;
+  color:#315b46;
+  font-weight:700;
+}
+.playback-summary .playback-meta #moveCount{
+  font-size:9px;
+}
+
+.move-rail .rail-step{
+  flex:0 0 31px;
+  width:100%;
+  min-height:31px;
+  height:31px;
+  padding:0 5px;
+  border-color:#c9d0c6;
+  background:#fafbf7;
+  color:#405448;
+  font-size:10px;
+  font-weight:600;
+}
+.move-rail .rail-step:disabled{
+  opacity:.3;
+}
+.move-rail-title{
+  flex:0 0 23px;
+  min-height:23px;
+  height:23px;
+  border:1px solid transparent;
+  border-radius:6px;
+  font-weight:700;
+  color:#4b6153;
+}
+.move-rail-title:active{
+  background:#e8ede4;
+}
+
+.branch-box{
+  border-color:#9fb19f;
+  border-left:3px solid #557c62;
+  background:#eaf1e6;
+  box-shadow:0 1px 0 #ffffffa8 inset;
+}
+.branch-box>span{
+  color:#3f684f;
+  font-weight:700;
+}
+.branch-box select{
+  border-color:#9fb3a4;
+  background:#fffef8;
+  font-weight:700;
+}
+
+.nearby-moves button.has-branch{
+  border-left:3px solid #8b8153;
+  background:#f1efdf;
+  padding-left:4px;
+}
+.nearby-moves button.has-branch strong{
+  color:#5e5731;
+  font-weight:700;
+}
+.nearby-moves button.has-branch::after{
+  top:2px;
+  right:2px;
+  padding:1px 4px;
+  background:#dcd6a9;
+  color:#514a25;
+  font-size:7px;
+  font-weight:700;
+}
+.nearby-moves button.has-diagram{
+  background:#eef4ea;
+}
+.nearby-moves button .diagram-label{
+  display:inline-block;
+  max-width:100%;
+  margin-top:2px;
+  padding:1px 4px;
+  border-radius:999px;
+  background:#d2e2ce;
+  color:#315943;
+  font-weight:700;
+  letter-spacing:.01em;
+}
+.nearby-moves button[aria-current=true]{
+  border-color:#75977d;
+  background:#dce9dd;
+  box-shadow:inset 0 0 0 1px #9bb5a0;
+}
+.nearby-moves button[aria-current=true].has-branch{
+  border-left-color:#557c62;
+  background:#dce8d8;
+}
+
+@media(max-width:370px){
+  .playback.playback-summary{
+    flex-basis:28px;
+    min-height:28px;
+  }
+  .playback-summary .playback-info{
+    height:28px;
+    grid-template-rows:16px 12px;
+  }
+  .move-rail .rail-step{
+    flex-basis:29px;
+    min-height:29px;
+    height:29px;
+  }
+}
