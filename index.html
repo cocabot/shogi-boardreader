@@ -46,7 +46,19 @@
         <div id="goteHand" class="hand hand-top" aria-label="後手の持ち駒"></div>
         <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
       </div>
-      <div class="board-wrap"><div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div></div>
+      <div class="board-wrap">
+        <div class="board-layout">
+          <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
+          <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
+            <button id="railRecordList" class="move-rail-title" type="button">棋譜</button>
+            <div id="branchBox" class="branch-box" hidden>
+              <span id="branchOrigin"></span>
+              <select id="branchSelect" aria-label="本譜・変化を切り替え"></select>
+            </div>
+            <ol id="nearbyMoves" class="nearby-moves"></ol>
+          </aside>
+        </div>
+      </div>
       <div class="playback" aria-label="棋譜再生">
         <button id="prevMove" disabled>‹ 前</button>
         <div class="playback-info">
@@ -54,7 +66,6 @@
           <div class="playback-meta">
             <span id="positionLabel" hidden></span>
             <span id="moveCount">0 / 0 手</span>
-            <select id="branchSelect" hidden aria-label="本譜・変化を切り替え"></select>
           </div>
         </div>
         <button id="nextMove" disabled>次 ›</button>
