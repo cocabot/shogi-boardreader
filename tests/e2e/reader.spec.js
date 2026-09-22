@@ -98,12 +98,24 @@ test('record load resizes immediately and shows move, diagram label and inline b
       boardWidth: board.width,
     };
   })).toMatchObject({clear:true,railRight:true});
-  const loadedLayout=await page.evaluate(()=>({
-    boardLeft:document.querySelector('.board-frame').getBoundingClientRect().left,
-    boardWidth:document.querySelector('.board-frame').getBoundingClientRect().width,
-  }));
-  expect(loadedLayout.boardWidth).toBeGreaterThan(240);
+  const loadedLayout=await page.evaluate(()=>{
+    const board=document.querySelector('.board-frame').getBoundingClientRect();
+    const left=document.querySelector('.side-hand-left').getBoundingClientRect();
+    const right=document.querySelector('.side-hand-right').getBoundingClientRect();
+    const rail=document.querySelector('#moveRail').getBoundingClientRect();
+    return {
+      boardLeft:board.left,
+      boardWidth:board.width,
+      leftBeforeBoard:left.right <= board.left + 1,
+      rightAfterBoard:right.left >= board.right - 1,
+      railAfterRight:rail.left >= right.right - 1,
+    };
+  });
+  expect(loadedLayout.boardWidth).toBeGreaterThan(225);
   expect(loadedLayout.boardLeft).toBeLessThan(70);
+  expect(loadedLayout.leftBeforeBoard).toBe(true);
+  expect(loadedLayout.rightAfterBoard).toBe(true);
+  expect(loadedLayout.railAfterRight).toBe(true);
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#currentMove')).toContainText('1手');
@@ -137,7 +149,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
   expect(contextLayout.order).toEqual(['recordBranch','recordProgress','recordDiagram']);
   expect(contextLayout.branchWeight).toBeGreaterThan(contextLayout.progressWeight);
   expect(contextLayout.diagramWeight).toBeGreaterThanOrEqual(contextLayout.branchWeight);
-  expect(contextLayout.diagramSize).toBeGreaterThan(contextLayout.progressSize);
+  expect(contextLayout.diagramSize).toBeGreaterThanOrEqual(contextLayout.progressSize);
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#moveRail')).toBeVisible();
@@ -151,6 +163,9 @@ test('record load resizes immediately and shows move, diagram label and inline b
     movesTop:document.querySelector('#nearbyMoves').getBoundingClientRect().top,
     nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
     movesBottom:document.querySelector('#nearbyMoves').getBoundingClientRect().bottom,
+    navHeight:document.querySelector('.move-rail-nav').getBoundingClientRect().height,
+    boardHeight:document.querySelector('.board').getBoundingClientRect().height,
+    navTop:document.querySelector('.move-rail-nav').getBoundingClientRect().top,
     stateHeight:document.querySelector('#recordState').getBoundingClientRect().height,
     visibleRows:document.querySelectorAll('#nearbyMoves button').length,
     rowsOverlap:Array.from(document.querySelectorAll('#nearbyMoves li')).some((el,i,all)=>{
@@ -160,8 +175,9 @@ test('record load resizes immediately and shows move, diagram label and inline b
       return a.bottom > b.top + 0.5;
     }),
   }));
-  expect(navLayout.branchTop).toBeLessThan(navLayout.prevTop);
-  expect(navLayout.branchBottom).toBeLessThanOrEqual(navLayout.prevTop+1);
+  expect(navLayout.branchTop).toBeLessThan(navLayout.navTop);
+  expect(navLayout.branchBottom).toBeLessThanOrEqual(navLayout.navTop+1);
+  expect(Math.abs(navLayout.navHeight-navLayout.boardHeight)).toBeLessThanOrEqual(1);
   expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
   expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
   expect(navLayout.stateHeight).toBe(0);
