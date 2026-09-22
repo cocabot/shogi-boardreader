@@ -680,7 +680,14 @@ $('#closeMessage').onclick = () => $('#messageDialog').close();
 $('#boardMenuButton').onclick = () => $('#boardMenuDialog').showModal();
 $('#closeBoardMenu').onclick = () => $('#boardMenuDialog').close();
 $('#boardMenuDialog').addEventListener('click', (event) => {
-  if (event.target === $('#boardMenuDialog')) $('#boardMenuDialog').close();
+  const dialog = $('#boardMenuDialog');
+  if (event.target === dialog) {
+    dialog.close();
+    return;
+  }
+  if (event.target.closest('button') && event.target.id !== 'closeBoardMenu') {
+    queueMicrotask(() => { if (dialog.open) dialog.close(); });
+  }
 });
 
 function renderRecordList() {
