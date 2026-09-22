@@ -114,9 +114,8 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#branchSelect')).toHaveValue('0');
 
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#nextMove')).toBeEnabled();
-  await page.locator('#nextMove').tap();
   await expect(page.locator('#positionLabel')).toHaveText('第１図');
+  await expect(page.locator('#nextMove')).toBeEnabled();
 
   await page.screenshot({path:info.outputPath('record-context.png')});
 });
