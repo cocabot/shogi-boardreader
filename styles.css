@@ -759,3 +759,126 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     height:31px;
   }
 }
+
+
+/* Unified top menu + collision-proof move rail. */
+.reader-toolbar{
+  flex-wrap:nowrap!important;
+  justify-content:space-between;
+  min-height:44px;
+}
+.main-menu-button{
+  flex:0 0 40px;
+  width:40px;
+  min-width:40px!important;
+  min-height:36px!important;
+  padding:0!important;
+  font-size:20px!important;
+  line-height:1;
+}
+.reader-toolbar .page-controls,
+.reader-toolbar .zoom-controls{
+  flex:0 0 auto;
+}
+.reader-panel{
+  grid-template-rows:44px minmax(0,1fr)!important;
+}
+#recordState{
+  display:none!important;
+}
+
+.app-menu-dialog{
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.app-menu-dialog .menu-section{
+  padding:10px 0 12px;
+  border-top:1px solid var(--line);
+}
+.app-menu-dialog .menu-section:first-of-type{
+  border-top:0;
+  padding-top:2px;
+}
+.app-menu-dialog .menu-section h3{
+  margin:0 0 7px;
+  font-size:11px;
+  letter-spacing:.08em;
+  color:#627066;
+}
+.menu-file-name{
+  margin:0 0 8px;
+  padding:7px 8px;
+  border-radius:7px;
+  background:#eef1eb;
+  color:#536158;
+  font-size:11px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.menu-toggle{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 9px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:#fafbf7;
+  font-size:12px;
+}
+.menu-link{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 9px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  color:var(--accent);
+  background:#fafbf7;
+  text-decoration:none;
+  font-size:12px;
+}
+.app-menu-dialog .file-button.secondary{
+  width:100%;
+  min-height:42px;
+  height:42px;
+}
+
+.nearby-moves{
+  overflow-x:hidden;
+}
+.nearby-moves li{
+  flex:0 0 auto!important;
+  min-height:max-content!important;
+}
+.nearby-moves button{
+  display:block;
+  min-height:30px!important;
+  height:auto!important;
+  overflow:hidden;
+}
+.nearby-moves button strong,
+.nearby-moves button small{
+  pointer-events:none;
+}
+.move-rail{
+  overflow:hidden;
+}
+.branch-box{
+  flex-shrink:0;
+}
+.move-rail .rail-step{
+  flex-shrink:0;
+}
+@media(max-width:360px){
+  .main-menu-button{
+    flex-basis:34px;
+    width:34px;
+    min-width:34px!important;
+  }
+  .reader-toolbar{
+    padding-inline:4px;
+  }
+}
