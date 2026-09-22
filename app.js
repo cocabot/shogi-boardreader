@@ -33,7 +33,7 @@ let names = {b:'先手',w:'後手'};
 function setReaderRatio(ratio) {
   const padding = getComputedStyle(app);
   const available = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
-  const minBoardPanel = available < 600 ? 265 : 330;
+  const minBoardPanel = available < 600 ? 250 : 300;
   const maxRatio = Math.max(.2, Math.min(.7, (available - minBoardPanel - 16) / available));
   const clamped = Math.max(0.2, Math.min(maxRatio, ratio));
   document.documentElement.style.setProperty("--reader-ratio", clamped.toFixed(3));
@@ -44,7 +44,7 @@ function setReaderRatio(ratio) {
 }
 
 const savedRatio = Number(safeStorage.get("shogi-boardreader:split"));
-setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 && savedRatio < 0.46 ? savedRatio : 0.30);
+setReaderRatio(Number.isFinite(savedRatio) && savedRatio >= 0.42 && savedRatio <= 0.58 ? savedRatio : 0.50);
 
 let splitterDrag = null;
 
@@ -71,7 +71,10 @@ function endSplitterDrag(event) {
 
 splitter.addEventListener("pointerup", endSplitterDrag);
 splitter.addEventListener("pointercancel", endSplitterDrag);
-splitHalf.addEventListener("click", () => setReaderRatio(0.30));
+splitHalf.addEventListener("click", () => {
+  setReaderRatio(0.50);
+  $('#boardMenuDialog')?.close();
+});
 
 splitter.addEventListener('keydown', (event) => {
   if (!['ArrowUp','ArrowDown','Home'].includes(event.key)) return;
@@ -674,6 +677,12 @@ $('#recordFile').addEventListener('change', async (event) => {
   }
 });
 $('#closeMessage').onclick = () => $('#messageDialog').close();
+$('#boardMenuButton').onclick = () => $('#boardMenuDialog').showModal();
+$('#closeBoardMenu').onclick = () => $('#boardMenuDialog').close();
+$('#boardMenuDialog').addEventListener('click', (event) => {
+  if (event.target === $('#boardMenuDialog')) $('#boardMenuDialog').close();
+});
+
 function renderRecordList() {
   const list = $('#moveList'); list.replaceChildren();
   $('#recordMessage').textContent = record.current.comment || `${record.current.ply}手目 · ${record.current.displayText}`;
