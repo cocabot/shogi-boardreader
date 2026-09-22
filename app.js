@@ -1,7 +1,5 @@
-import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/legacy/build/pdf.min.mjs";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/legacy/build/pdf.worker.min.mjs";
+import { setupPdfReader } from "./pdf-reader.js";
+import { parseRecord, recordGame, playerNames } from "./record-reader.js";
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -10,18 +8,6 @@ const readerPanel = $("#readerPanel");
 const boardPanel = $("#boardPanel");
 const splitter = $("#splitter");
 const splitHalf = $("#splitHalf");
-
-const pdfFile = $("#pdfFile");
-const pdfStage = $("#pdfStage");
-const pdfCanvas = $("#pdfCanvas");
-const pdfEmpty = $("#pdfEmpty");
-const prevPage = $("#prevPage");
-const nextPage = $("#nextPage");
-const pageNumber = $("#pageNumber");
-const pageCount = $("#pageCount");
-const zoomOut = $("#zoomOut");
-const zoomIn = $("#zoomIn");
-const fitWidth = $("#fitWidth");
 
 const boardEl = $("#board");
 const senteHandEl = $("#senteHand");
@@ -34,23 +20,31 @@ const redoButton = $("#redo");
 const flipButton = $("#flip");
 const resetButton = $("#reset");
 
-let pdfDocument = null;
-let pageNum = 1;
-let zoom = 1;
-let fitToWidth = true;
-let renderTask = null;
-let renderToken = 0;
+const queuePdfRender = setupPdfReader();
+const safeStorage = {
+  get(key) { try { return localStorage.getItem(key); } catch { return null; } },
+  set(key, value) { try { localStorage.setItem(key, value); } catch { /* Private browsing/full storage must not break the app. */ } },
+};
+let record = null;
+let playback = false;
+let recordLoadID = 0;
+let names = {b:'先手',w:'後手'};
 
 function setReaderRatio(ratio) {
-  const clamped = Math.max(0.28, Math.min(0.7, ratio));
+  const padding = getComputedStyle(app);
+  const available = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
+  const minBoardPanel = available < 600 ? 265 : 330;
+  const maxRatio = Math.max(.2, Math.min(.7, (available - minBoardPanel - 16) / available));
+  const clamped = Math.max(0.2, Math.min(maxRatio, ratio));
   document.documentElement.style.setProperty("--reader-ratio", clamped.toFixed(3));
-  localStorage.setItem("shogi-boardreader:split", String(clamped));
+  safeStorage.set("shogi-boardreader:split", String(clamped));
+  splitter.setAttribute("aria-valuenow", String(Math.round(clamped * 100)));
   queuePdfRender();
   sizeBoard();
 }
 
-const savedRatio = Number(localStorage.getItem("shogi-boardreader:split"));
-setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 ? savedRatio : 0.5);
+const savedRatio = Number(safeStorage.get("shogi-boardreader:split"));
+setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 ? savedRatio : 0.34);
 
 let splitterDrag = null;
 
@@ -79,179 +73,12 @@ splitter.addEventListener("pointerup", endSplitterDrag);
 splitter.addEventListener("pointercancel", endSplitterDrag);
 splitHalf.addEventListener("click", () => setReaderRatio(0.5));
 
-pdfFile.addEventListener("change", async () => {
-  const [file] = pdfFile.files || [];
-  if (!file) return;
-
-  pdfEmpty.hidden = false;
-  pdfEmpty.innerHTML = "<strong>PDFを読み込み中…</strong><span></span>";
-
-  try {
-    const data = await file.arrayBuffer();
-    pdfDocument = await pdfjsLib.getDocument({ data }).promise;
-    pageNum = 1;
-    pageCount.textContent = String(pdfDocument.numPages);
-    pageNumber.max = String(pdfDocument.numPages);
-    pageNumber.value = "1";
-    fitToWidth = true;
-    fitWidth.setAttribute("aria-pressed", "true");
-    document.title = `${file.name} – 将棋 BoardReader`;
-    await renderPdfPage();
-  } catch (error) {
-    console.error(error);
-    pdfDocument = null;
-    pdfCanvas.hidden = true;
-    pdfEmpty.hidden = false;
-    pdfEmpty.innerHTML =
-      "<strong>PDFを開けませんでした</strong><span>別のPDFを選び直してください。</span>";
-  }
-
-  updatePdfControls();
+splitter.addEventListener('keydown', (event) => {
+  if (!['ArrowUp','ArrowDown','Home'].includes(event.key)) return;
+  event.preventDefault();
+  const current = Number(splitter.getAttribute('aria-valuenow')) / 100;
+  setReaderRatio(event.key === 'Home' ? .5 : current + (event.key === 'ArrowUp' ? -.04 : .04));
 });
-
-async function renderPdfPage() {
-  if (!pdfDocument) return;
-
-  const token = ++renderToken;
-  const page = await pdfDocument.getPage(pageNum);
-  if (token !== renderToken) return;
-
-  const baseViewport = page.getViewport({ scale: 1 });
-  const availableWidth = Math.max(120, pdfStage.clientWidth - 10);
-  const scale = fitToWidth
-    ? Math.max(0.25, availableWidth / baseViewport.width)
-    : zoom;
-  const viewport = page.getViewport({ scale });
-  const outputScale = Math.min(window.devicePixelRatio || 1, 2.5);
-
-  pdfCanvas.width = Math.floor(viewport.width * outputScale);
-  pdfCanvas.height = Math.floor(viewport.height * outputScale);
-  pdfCanvas.style.width = `${Math.floor(viewport.width)}px`;
-  pdfCanvas.style.height = `${Math.floor(viewport.height)}px`;
-  pdfCanvas.hidden = false;
-  pdfEmpty.hidden = true;
-
-  const context = pdfCanvas.getContext("2d", { alpha: false });
-  const transform =
-    outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0];
-
-  if (renderTask) {
-    try {
-      renderTask.cancel();
-    } catch {
-      // A completed render cannot be cancelled; safe to ignore.
-    }
-  }
-
-  renderTask = page.render({
-    canvasContext: context,
-    transform,
-    viewport,
-  });
-
-  try {
-    await renderTask.promise;
-    if (token === renderToken) {
-      pdfStage.scrollTo({ top: 0, left: 0 });
-    }
-  } catch (error) {
-    if (error?.name !== "RenderingCancelledException") {
-      console.error(error);
-    }
-  } finally {
-    if (token === renderToken) renderTask = null;
-  }
-
-  updatePdfControls();
-}
-
-let renderTimer = null;
-function queuePdfRender() {
-  if (!pdfDocument || !fitToWidth) return;
-  window.clearTimeout(renderTimer);
-  renderTimer = window.setTimeout(renderPdfPage, 100);
-}
-
-function updatePdfControls() {
-  const ready = Boolean(pdfDocument);
-  prevPage.disabled = !ready || pageNum <= 1;
-  nextPage.disabled = !ready || pageNum >= (pdfDocument?.numPages ?? 1);
-  pageNumber.disabled = !ready;
-  zoomOut.disabled = !ready;
-  zoomIn.disabled = !ready;
-  fitWidth.disabled = !ready;
-  if (ready) {
-    pageNumber.value = String(pageNum);
-    pageCount.textContent = String(pdfDocument.numPages);
-  }
-}
-
-async function goToPage(next) {
-  if (!pdfDocument) return;
-  const target = Math.max(1, Math.min(pdfDocument.numPages, Number(next)));
-  if (!Number.isFinite(target) || target === pageNum) return;
-  pageNum = target;
-  await renderPdfPage();
-}
-
-prevPage.addEventListener("click", () => goToPage(pageNum - 1));
-nextPage.addEventListener("click", () => goToPage(pageNum + 1));
-
-pageNumber.addEventListener("change", () => {
-  goToPage(Number(pageNumber.value));
-});
-
-zoomOut.addEventListener("click", () => {
-  if (!pdfDocument) return;
-  fitToWidth = false;
-  zoom = Math.max(0.5, zoom - 0.15);
-  fitWidth.setAttribute("aria-pressed", "false");
-  renderPdfPage();
-});
-
-zoomIn.addEventListener("click", () => {
-  if (!pdfDocument) return;
-  fitToWidth = false;
-  zoom = Math.min(3.5, zoom + 0.15);
-  fitWidth.setAttribute("aria-pressed", "false");
-  renderPdfPage();
-});
-
-fitWidth.addEventListener("click", () => {
-  if (!pdfDocument) return;
-  fitToWidth = true;
-  fitWidth.setAttribute("aria-pressed", "true");
-  renderPdfPage();
-});
-
-let pdfSwipeStart = null;
-pdfStage.addEventListener(
-  "touchstart",
-  (event) => {
-    if (event.touches.length !== 1) return;
-    const touch = event.touches[0];
-    pdfSwipeStart = { x: touch.clientX, y: touch.clientY };
-  },
-  { passive: true },
-);
-
-pdfStage.addEventListener(
-  "touchend",
-  (event) => {
-    if (!pdfSwipeStart || !pdfDocument || event.changedTouches.length !== 1) return;
-    const touch = event.changedTouches[0];
-    const dx = touch.clientX - pdfSwipeStart.x;
-    const dy = touch.clientY - pdfSwipeStart.y;
-    pdfSwipeStart = null;
-
-    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-    if (pdfStage.scrollWidth > pdfStage.clientWidth + 4) return;
-
-    if (dx < 0) goToPage(pageNum + 1);
-    else goToPage(pageNum - 1);
-  },
-  { passive: true },
-);
 
 const PIECE_LABEL = {
   P: "歩",
@@ -327,7 +154,7 @@ let suppressClick = false;
 
 function loadBoardState() {
   try {
-    const saved = JSON.parse(localStorage.getItem("shogi-boardreader:board") || "null");
+    const saved = JSON.parse(safeStorage.get("shogi-boardreader:board") || "null");
     if (
       saved &&
       Array.isArray(saved.board) &&
@@ -343,7 +170,7 @@ function loadBoardState() {
 }
 
 function saveBoardState() {
-  localStorage.setItem("shogi-boardreader:board", JSON.stringify(game));
+  if (!playback) safeStorage.set("shogi-boardreader:board", JSON.stringify(game));
 }
 
 function snapshot() {
@@ -377,6 +204,12 @@ function isOpponentFacing(piece) {
 
 function renderBoard() {
   boardEl.replaceChildren();
+  $('#fileLabels').replaceChildren(...Array.from({length:9}, (_, i) => {
+    const el = document.createElement('span'); el.textContent = game.flipped ? i+1 : 9-i; return el;
+  }));
+  $('#rankLabels').replaceChildren(...Array.from({length:9}, (_, i) => {
+    const el = document.createElement('span'); el.textContent = '一二三四五六七八九'[game.flipped ? 8-i : i]; return el;
+  }));
 
   for (let displayRow = 0; displayRow < 9; displayRow += 1) {
     for (let displayCol = 0; displayCol < 9; displayCol += 1) {
@@ -385,6 +218,10 @@ function renderBoard() {
       square.className = "square";
       square.dataset.index = String(index);
       square.setAttribute("role", "gridcell");
+      square.tabIndex = 0;
+      square.setAttribute('aria-selected', String(selected?.kind === 'board' && selected.index === index));
+      const occupant = game.board[index];
+      square.setAttribute('aria-label', `${9-index%9}${'一二三四五六七八九'[Math.floor(index/9)]} ${occupant ? (occupant.owner==='b'?'先手 ':'後手 ')+pieceLabel(occupant) : '空きマス'}`);
 
       if (selected?.kind === "board" && selected.index === index) {
         square.classList.add("selected");
@@ -399,7 +236,9 @@ function renderBoard() {
         pieceEl.className = "piece";
         if (piece.promoted) pieceEl.classList.add("promoted");
         if (isOpponentFacing(piece)) pieceEl.classList.add("opponent");
-        pieceEl.textContent = pieceLabel(piece);
+        const glyph = document.createElement('span');
+        glyph.textContent = pieceLabel(piece);
+        pieceEl.append(glyph);
         pieceEl.dataset.index = String(index);
         pieceEl.setAttribute(
           "aria-label",
@@ -413,15 +252,16 @@ function renderBoard() {
   }
 
   renderHands();
-  undoButton.disabled = history.length === 0;
-  redoButton.disabled = future.length === 0;
+  undoButton.disabled = playback || history.length === 0;
+  redoButton.disabled = playback || future.length === 0;
+  resetButton.disabled = playback;
   flipButton.textContent = game.flipped ? "⇅ 先手側" : "⇅ 反転";
   saveBoardState();
 }
 
 function renderHands() {
-  renderHand("w", goteHandEl);
-  renderHand("b", senteHandEl);
+  renderHand(game.flipped ? "b" : "w", goteHandEl);
+  renderHand(game.flipped ? "w" : "b", senteHandEl);
 }
 
 function renderHand(owner, container) {
@@ -429,9 +269,11 @@ function renderHand(owner, container) {
 
   const sideLabel = document.createElement("span");
   sideLabel.className = "hand-side";
-  sideLabel.textContent = owner === "b" ? "先手" : "後手";
-  sideLabel.style.fontSize = "11px";
-  sideLabel.style.color = "var(--muted)";
+  const side = owner === 'b' ? '先手' : '後手';
+  sideLabel.textContent = `${owner === 'b' ? '▲' : '△'} ${playback ? names[owner] : side}`;
+  sideLabel.title = sideLabel.textContent;
+  if (playback && game.turn === owner) sideLabel.classList.add('active');
+  container.setAttribute('aria-label', `${side}の持ち駒`);
   container.append(sideLabel);
 
   for (const type of HAND_ORDER) {
@@ -450,15 +292,17 @@ function renderHand(owner, container) {
     }
     button.dataset.owner = owner;
     button.dataset.type = type;
-    button.textContent = `${PIECE_LABEL[type]}×${count}`;
+    button.textContent = PIECE_LABEL[type];
+    const badge = document.createElement('small'); badge.textContent = count; button.append(badge);
+    button.setAttribute('aria-label', `${side}の持ち駒 ${PIECE_LABEL[type]} ${count}枚`);
+    button.disabled = playback;
     container.append(button);
   }
 
   if (!HAND_ORDER.some((type) => game.hands[owner][type] > 0)) {
     const empty = document.createElement("span");
     empty.textContent = "持駒なし";
-    empty.style.fontSize = "11px";
-    empty.style.color = "var(--muted)";
+    empty.className = "empty-hand";
     container.append(empty);
   }
 }
@@ -491,6 +335,7 @@ function maybeAskPromotion(piece, from, to) {
 }
 
 function attemptBoardMove(from, to) {
+  if (playback) return;
   if (from === to) {
     selected = null;
     renderBoard();
@@ -510,7 +355,7 @@ function attemptBoardMove(from, to) {
   pushHistory();
   clearPromotionPrompt();
 
-  if (target) {
+  if (target && target.type !== "K") {
     game.hands[moving.owner][target.type] += 1;
   }
 
@@ -524,6 +369,7 @@ function attemptBoardMove(from, to) {
 }
 
 function dropFromHand(selection, to) {
+  if (playback) return;
   if (game.board[to]) return;
   if (game.hands[selection.owner][selection.type] <= 0) return;
 
@@ -542,6 +388,7 @@ function dropFromHand(selection, to) {
 }
 
 function selectSquare(index) {
+  if (playback) return;
   const piece = game.board[index];
 
   if (selected?.kind === "hand") {
@@ -572,6 +419,7 @@ boardEl.addEventListener("click", (event) => {
 });
 
 function onHandClick(event) {
+  if (playback) return;
   const button = event.target.closest(".hand-piece");
   if (!button) return;
 
@@ -612,6 +460,7 @@ function createDragGhost(piece, x, y) {
 }
 
 boardEl.addEventListener("pointerdown", (event) => {
+  if (playback) return;
   const pieceEl = event.target.closest(".piece");
   if (!pieceEl || event.button !== 0) return;
 
@@ -740,10 +589,13 @@ resetButton.addEventListener("click", () => {
 });
 
 function sizeBoard() {
-  const wrap = boardEl.parentElement;
-  if (!wrap) return;
-  const size = Math.max(160, Math.min(wrap.clientWidth, wrap.clientHeight));
-  boardEl.style.width = `${size}px`;
+  const frame = boardEl.parentElement, wrap = frame.parentElement;
+  const style = getComputedStyle(frame);
+  const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
+  const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
+  const size = Math.max(0, Math.floor(Math.min(wrap.clientWidth-dx, wrap.clientHeight-dy, 480)));
+  boardEl.style.setProperty('--board-pixels', `${size}px`);
+  boardEl.style.setProperty('--piece-size', `${Math.max(0, (size-2)/9 * .57)}px`);
 }
 
 const resizeObserver = new ResizeObserver(() => {
@@ -753,6 +605,7 @@ const resizeObserver = new ResizeObserver(() => {
 
 resizeObserver.observe(readerPanel);
 resizeObserver.observe(boardPanel);
+window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
 
 window.addEventListener("orientationchange", () => {
   window.setTimeout(() => {
@@ -764,4 +617,92 @@ window.addEventListener("orientationchange", () => {
 loadBoardState();
 renderBoard();
 sizeBoard();
-updatePdfControls();
+
+
+
+boardEl.addEventListener('keydown', (event) => {
+  const cell = event.target.closest('.square');
+  if (!cell) return;
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault(); const index = cell.dataset.index;
+    selectSquare(Number(index)); boardEl.querySelector(`[data-index="${index}"]`)?.focus();
+  }
+});
+
+function updatePlayback() {
+  const ply = record?.current.ply ?? 0;
+  $('#moveCount').textContent = record && playback ? `${ply} / ${record.length} 手` : '自由盤';
+  for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
+  for (const id of ['lastMove','nextMove']) $("#"+id).disabled = !record || (playback && ply === record.length);
+  $('#recordListButton').disabled = !record;
+  $('#boardMode').textContent = playback ? `${game.turn==='b'?'▲ 先手':'△ 後手'}の手番` : record ? '検討中' : '自由盤';
+  $('#studyPosition').hidden = !playback;
+  $('#resumeRecord').hidden = playback;
+}
+function showRecordPosition() {
+  playback = true;
+  game = recordGame(record, game.flipped);
+  selected = null; clearPromotionPrompt();
+  renderBoard(); updatePlayback();
+}
+function navigateRecord(ply) {
+  if (!record) return;
+  record.goto(ply); showRecordPosition();
+}
+$('#firstMove').onclick = () => navigateRecord(0);
+$('#prevMove').onclick = () => navigateRecord(record.current.ply-1);
+$('#nextMove').onclick = () => navigateRecord(record.current.ply+1);
+$('#lastMove').onclick = () => navigateRecord(record.length);
+$('#recordFile').addEventListener('change', async (event) => {
+  const file = event.target.files?.[0]; event.target.value = '';
+  if (!file) return;
+  const id = ++recordLoadID;
+  try {
+    if (file.size > 5*1024*1024) throw new Error('棋譜は5MB以下のファイルを選択してください。');
+    const bytes = await file.arrayBuffer();
+    if (id !== recordLoadID) return;
+    const parsed = parseRecord(bytes, file.name);
+    record = parsed; names = playerNames(record);
+    history = []; future = [];
+    $('#recordName').textContent = file.name;
+    showRecordPosition();
+  } catch (error) {
+    if (id !== recordLoadID) return;
+    $('#messageText').textContent = error.message;
+    $('#messageDialog').showModal();
+  }
+});
+$('#closeMessage').onclick = () => $('#messageDialog').close();
+function renderRecordList() {
+  const list = $('#moveList'); list.replaceChildren();
+  $('#recordMessage').textContent = record.current.comment || `${record.current.ply}手目 · ${record.current.displayText}`;
+  for (const node of record.moves) {
+    const row = document.createElement('li');
+    const jump = document.createElement('button'); jump.className = 'move-jump';
+    jump.textContent = `${node.ply}　${node.ply ? node.displayText : '開始局面'}${node.comment ? ' ▤' : ''}`;
+    jump.setAttribute('aria-current', String(node === record.current));
+    jump.onclick = () => { record.gotoNode(node); showRecordPosition(); $('#recordDialog').close(); };
+    row.append(jump);
+    const first = node.prev?.next;
+    if (first?.branch) {
+      const choices = document.createElement('select'); choices.setAttribute('aria-label', `${node.ply}手目の変化`);
+      for (let branch = first; branch; branch = branch.branch) {
+        const option = document.createElement('option'); option.value = branch.branchIndex;
+        option.textContent = `${branch.branchIndex ? '変化'+branch.branchIndex : '本譜'}: ${branch.displayText}`;
+        option.selected = branch === node; choices.append(option);
+      }
+      choices.onchange = () => { record.gotoNode(node); record.switchBranchByIndex(Number(choices.value)); showRecordPosition(); renderRecordList(); };
+      row.append(choices);
+    }
+    list.append(row);
+  }
+}
+$('#recordListButton').onclick = () => { renderRecordList(); $('#recordDialog').showModal(); $('#moveList [aria-current="true"]')?.scrollIntoView({block:'nearest'}); };
+$('#closeRecord').onclick = () => $('#recordDialog').close();
+$('#studyPosition').onclick = () => {
+  playback = false; history = []; future = []; selected = null;
+  renderBoard(); updatePlayback(); $('#recordDialog').close();
+};
+$('#resumeRecord').onclick = () => { showRecordPosition(); $('#recordDialog').close(); };
+$('#mainLine').onclick = () => { record.goto(0); record.resetAllBranchSelection(); showRecordPosition(); renderRecordList(); };
+updatePlayback();
