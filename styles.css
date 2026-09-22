@@ -366,3 +366,141 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
   .playback-meta #positionLabel{max-width:72px}
   .playback-meta select{max-width:72px}
 }
+
+
+/* Side move rail: use horizontal spare space for context without stealing board height. */
+.board-layout{
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+.move-rail{
+  flex:0 0 88px;
+  width:88px;
+  height:min(100%,calc(var(--board-pixels,270px) + 17px));
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  overflow:hidden;
+  color:#536457;
+}
+.move-rail-title{
+  min-height:24px;
+  height:24px;
+  padding:0 5px;
+  border:0;
+  background:transparent;
+  color:#657568;
+  font-size:10px;
+  text-align:left;
+}
+.branch-box{
+  padding:4px 5px;
+  border:1px solid #cbd4c8;
+  border-radius:7px;
+  background:#f3f6ef;
+}
+.branch-box>span{
+  display:block;
+  margin-bottom:3px;
+  font-size:9px;
+  line-height:1.25;
+  color:#617164;
+}
+.branch-box select{
+  width:100%;
+  min-width:0;
+  height:24px;
+  min-height:24px;
+  padding:0 14px 0 4px;
+  border:1px solid #c7d0c4;
+  border-radius:6px;
+  background:#fff;
+  color:#334b3e;
+  font-size:10px;
+}
+.nearby-moves{
+  flex:1 1 auto;
+  min-height:0;
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:3px;
+}
+.nearby-moves li{
+  min-height:0;
+}
+.nearby-moves button{
+  position:relative;
+  width:100%;
+  min-height:34px;
+  height:auto;
+  padding:4px 5px;
+  border:1px solid transparent;
+  border-radius:7px;
+  background:transparent;
+  color:#657066;
+  text-align:left;
+  white-space:normal;
+  line-height:1.2;
+  font-size:9px;
+}
+.nearby-moves button strong{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-family:var(--piece-font);
+  font-size:11px;
+  font-weight:600;
+  color:#405247;
+}
+.nearby-moves button small{
+  display:block;
+  margin-top:1px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:8px;
+  color:#7b857d;
+}
+.nearby-moves button[aria-current=true]{
+  border-color:#9fb5a5;
+  background:#dfe8dc;
+}
+.nearby-moves button.has-branch::after{
+  content:"分岐";
+  position:absolute;
+  right:3px;
+  top:2px;
+  padding:1px 3px;
+  border-radius:5px;
+  background:#eef1df;
+  color:#687254;
+  font-size:7px;
+}
+.playback-meta select{display:none!important}
+
+@media(max-width:370px){
+  .board-layout{gap:2px}
+  .move-rail{
+    flex-basis:78px;
+    width:78px;
+  }
+  .nearby-moves button{
+    min-height:31px;
+    padding-inline:4px;
+  }
+  .nearby-moves button strong{font-size:10px}
+  .branch-box{padding:3px}
+  .branch-box>span{font-size:8px}
+}
