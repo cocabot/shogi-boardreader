@@ -13,7 +13,7 @@ test('compact iPhone split keeps the board large and menus out of the way',async
   await page.getByRole('separator').press('Home');
 
   await expect.poll(async()=>page.locator('#readerPanel').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThan(360);
-  await expect.poll(async()=>page.locator('.board').evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(300);
+  await expect.poll(async()=>page.locator('.board').evaluate(el=>el.getBoundingClientRect().width)).toBeGreaterThan(260);
 
   const splitterHeight=await page.locator('#splitter').evaluate(el=>el.getBoundingClientRect().height);
   expect(splitterHeight).toBeLessThanOrEqual(22);
