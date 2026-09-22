@@ -1207,3 +1207,245 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     font-size:9.5px;
   }
 }
+
+
+/* PDF-like captured-piece layout: gote on the left, sente on the right. */
+.board-layout{
+  align-items:flex-end!important;
+  gap:3px!important;
+}
+.board-column{
+  flex:0 0 auto;
+}
+.side-hand-column{
+  flex:0 0 20px;
+  width:20px;
+  height:var(--board-pixels,270px);
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  align-self:flex-end;
+  min-width:0;
+}
+.side-hand-column .hand{
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-width:none;
+  margin:0;
+  padding:2px 0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:2px;
+  overflow:hidden;
+  background:transparent;
+}
+.side-hand-column .hand-side{
+  width:18px;
+  max-width:none;
+  flex:0 0 auto;
+  display:block;
+  overflow:hidden;
+  text-overflow:clip;
+  white-space:normal;
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  font-size:8px;
+  line-height:1.05;
+  color:#657068;
+}
+.side-hand-column .hand-side.active::before{
+  display:none;
+}
+.side-hand-column .empty-hand{
+  flex:0 0 auto;
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  font-size:8px;
+  line-height:1;
+  color:#8a8d83;
+  white-space:normal;
+}
+.side-hand-column .hand-piece{
+  position:relative;
+  flex:0 0 22px;
+  width:20px;
+  height:22px;
+  min-height:22px;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border-color:#c6b089;
+  border-radius:4px;
+  background:#efe0bd;
+  font-family:var(--piece-font);
+  font-size:13px;
+}
+.side-hand-column .hand-piece small{
+  position:absolute;
+  right:-1px;
+  bottom:-1px;
+  min-width:9px;
+  height:9px;
+  margin:0;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:#586b5e;
+  color:white;
+  font:700 7px/1 sans-serif;
+}
+.side-hand-right .hand{
+  justify-content:flex-end;
+}
+.side-hand-right .hand-side{
+  order:99;
+}
+.side-hand-right .empty-hand{
+  order:98;
+}
+
+.board-frame{
+  padding:12px 10px 3px 2px!important;
+}
+.file-labels{
+  top:0!important;
+  left:2px!important;
+  right:10px!important;
+}
+.rank-labels{
+  right:0!important;
+  top:12px!important;
+  bottom:3px!important;
+  width:10px!important;
+}
+
+/* Keep navigation exactly board-high. Branch controls float above it. */
+.move-rail{
+  position:relative;
+  flex:0 0 76px!important;
+  width:76px!important;
+  height:var(--board-pixels,270px)!important;
+  align-self:flex-end;
+  overflow:visible!important;
+}
+.move-rail-nav{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-height:0;
+}
+.branch-box{
+  position:absolute!important;
+  left:0;
+  right:0;
+  bottom:calc(100% + 4px);
+  z-index:4;
+  padding:3px 4px!important;
+  border-left-width:2px!important;
+  border-radius:8px!important;
+}
+.branch-box>span{
+  margin-bottom:2px!important;
+  font-size:8px!important;
+  line-height:1.1;
+}
+.branch-box select{
+  height:23px!important;
+  min-height:23px!important;
+  font-size:9px!important;
+}
+.move-rail .rail-step{
+  flex:0 0 38px!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:0 3px!important;
+  font-size:10px!important;
+}
+.nearby-moves{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:3px!important;
+  overflow:hidden!important;
+}
+.nearby-moves li{
+  flex:0 0 auto!important;
+}
+.nearby-moves button{
+  min-height:29px!important;
+  height:29px!important;
+  padding:2px 4px!important;
+}
+.nearby-moves button strong{
+  font-size:10px!important;
+}
+
+/* Softer context hierarchy: plain line text for line/progress, light emphasis for diagram. */
+.record-context{
+  min-height:22px!important;
+  flex-basis:22px!important;
+  gap:7px!important;
+  font-size:10px!important;
+}
+#recordBranch{
+  max-width:120px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#70634b!important;
+  font-size:10px!important;
+  font-weight:650!important;
+}
+#recordProgress{
+  font-size:10px!important;
+  font-weight:500!important;
+  color:#6b746d!important;
+}
+#recordDiagram{
+  max-width:86px!important;
+  padding:1px 5px!important;
+  border:0!important;
+  border-radius:5px!important;
+  background:#dfeadd!important;
+  color:#315a43!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+
+@media(max-width:370px){
+  .side-hand-column{
+    flex-basis:18px;
+    width:18px;
+  }
+  .side-hand-column .hand-side,
+  .side-hand-column .empty-hand{
+    width:16px;
+    font-size:7px;
+  }
+  .side-hand-column .hand-piece{
+    width:18px;
+    height:20px;
+    min-height:20px;
+    flex-basis:20px;
+    font-size:12px;
+  }
+  .move-rail{
+    flex-basis:72px!important;
+    width:72px!important;
+  }
+  .move-rail .rail-step{
+    flex-basis:36px!important;
+    min-height:36px!important;
+    height:36px!important;
+    font-size:9px!important;
+  }
+}
