@@ -1,0 +1,19 @@
+{
+  "name": "将棋 BoardReader",
+  "short_name": "BoardReader",
+  "description": "将棋本のPDFと自由将棋盤をiPhoneの1画面に並べて読むためのWebアプリ",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#17130f",
+  "theme_color": "#17130f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
