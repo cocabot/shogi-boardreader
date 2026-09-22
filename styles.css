@@ -882,3 +882,162 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     padding-inline:4px;
   }
 }
+
+
+/* Record context above the board; current move remains centered in the side rail. */
+.board-wrap{
+  display:flex!important;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  gap:2px;
+}
+.record-context{
+  flex:0 0 20px;
+  min-height:20px;
+  max-width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:0 4px;
+  font-size:9px;
+  line-height:1;
+  white-space:nowrap;
+  color:#667168;
+}
+.record-context[hidden]{display:none!important}
+.record-context span{
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#recordProgress{
+  color:#6f786f;
+}
+#recordDiagram{
+  max-width:90px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#dce9d8;
+  color:#315d46;
+  font-weight:700;
+}
+#recordBranch{
+  max-width:132px;
+  padding:2px 5px;
+  border-radius:999px;
+  background:#efe4cf;
+  color:#765d35;
+  font-weight:700;
+}
+.board-layout{
+  flex:1 1 auto;
+  min-height:0;
+  width:100%;
+}
+
+.nearby-moves{
+  justify-content:center!important;
+  overflow-y:auto;
+  scroll-behavior:auto;
+}
+.nearby-moves li{
+  flex:0 0 auto!important;
+}
+.nearby-moves button{
+  min-height:27px!important;
+  padding:3px 5px!important;
+}
+.nearby-moves button strong{
+  font-size:10px;
+  line-height:1.15;
+}
+.nearby-moves button small{
+  display:none!important;
+}
+.nearby-moves button[aria-current=true]{
+  border-color:#5e8a6b!important;
+  background:#d8e8db!important;
+  box-shadow:inset 0 0 0 1px #86aa8e!important;
+}
+.nearby-moves button[aria-current=true] strong{
+  color:#244a35;
+  font-weight:800;
+}
+.nearby-moves button.has-branch{
+  border-left:3px solid #9a7a42;
+  background:#f3eddc;
+}
+.nearby-moves button.has-branch::after{
+  content:"分岐";
+  position:absolute;
+  right:2px;
+  top:2px;
+  padding:1px 3px;
+  border-radius:5px;
+  background:#dfd2a9;
+  color:#5c4d29;
+  font-size:7px;
+  font-weight:700;
+}
+
+/* Give PDF and record sections distinct visual identities. */
+.app-menu-dialog .menu-section{
+  margin:0 -4px;
+  padding:10px 8px 12px;
+  border-radius:10px;
+}
+.app-menu-dialog .menu-section + .menu-section{
+  margin-top:8px;
+}
+.menu-section-book{
+  background:#edf5ef;
+  border:1px solid #cfe0d3!important;
+}
+.menu-section-book h3{
+  color:#2e6249!important;
+}
+.menu-section-book .file-button.secondary{
+  background:#2f684e!important;
+  color:#fff!important;
+}
+.menu-section-book .menu-toggle,
+.menu-section-book .menu-link,
+.menu-section-book .menu-file-name{
+  border-color:#bfd2c3;
+  background:#f7fbf8;
+}
+.menu-section-record{
+  background:#f7f0e4;
+  border:1px solid #e4d2b6!important;
+}
+.menu-section-record h3{
+  color:#825f2d!important;
+}
+.menu-section-record .file-button.secondary{
+  background:#9a7139!important;
+  color:#fff!important;
+}
+.menu-section-record button{
+  border-color:#d9c19b;
+  background:#fffaf1;
+}
+.menu-section-board{
+  background:#f2f1ec;
+  border:1px solid #dcddd5!important;
+}
+.menu-section-board h3{
+  color:#5c655e!important;
+}
+
+@media(max-width:370px){
+  .record-context{
+    gap:3px;
+    font-size:8px;
+  }
+  #recordDiagram{max-width:70px}
+  #recordBranch{max-width:108px}
+  .nearby-moves button{
+    min-height:25px!important;
+  }
+}
