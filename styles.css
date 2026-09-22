@@ -1538,3 +1538,9 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
 }
 
 .install-help{font-size:12px;line-height:1.6;color:#536253;margin:8px 0}
+
+/* Fill the actual app window, including standalone iOS's former toolbar area. */
+.app{position:fixed;inset:0;width:100%;height:var(--app-height,100%);max-height:none}
+.splitter #boardCollapse{left:6px;right:auto;min-height:20px;height:20px;font-size:10px;padding:0 7px}
+.app.board-collapsed{grid-template-rows:minmax(0,1fr) 20px 0}
+.app.board-collapsed .board-panel{display:none!important}

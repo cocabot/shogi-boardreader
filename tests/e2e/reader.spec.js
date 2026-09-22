@@ -175,3 +175,19 @@ test('Japanese CID PDF renders text correctly on WebKit',async({page},info)=>{
 
   await page.screenshot({path:info.outputPath('pdf-webkit.png')});
 });
+
+
+test('collapse gives the PDF the full window and restores the board',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  const before = await page.locator('#splitter').getAttribute('aria-valuenow');
+  await page.locator('#boardCollapse').tap();
+  await expect(page.locator('#boardPanel')).toBeHidden();
+  await expect(page.locator('#boardCollapse')).toHaveText('盤を戻す');
+  await page.setViewportSize({width:390,height:900});
+  await expect(page.locator('#boardPanel')).toBeHidden();
+  await page.locator('#boardCollapse').tap();
+  await expect(page.locator('#boardPanel')).toBeVisible();
+  await expect(page.locator('#splitter')).toHaveAttribute('aria-valuenow',before);
+  const gap=await page.evaluate(()=>innerHeight-document.querySelector('#app').getBoundingClientRect().bottom);
+  expect(Math.abs(gap)).toBeLessThan(2);
+});

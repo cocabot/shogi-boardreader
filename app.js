@@ -37,7 +37,48 @@ let playback = false;
 let recordLoadID = 0;
 let names = {b:'先手',w:'後手'};
 
+let boardCollapsed = false;
+let expandedRatio = .34;
+function syncViewportHeight() {
+  // Standalone iOS can retain Safari's small dvh after launch; use the actual window.
+  const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  const viewport = window.visualViewport;
+  const height = standalone || !viewport || viewport.scale !== 1 ? window.innerHeight : viewport.height;
+  document.documentElement.style.setProperty('--app-height', `${Math.round(height)}px`);
+}
+syncViewportHeight();
+function revealBoard() {
+  boardCollapsed = false;
+  app.classList.remove('board-collapsed');
+  boardPanel.hidden = false;
+  $('#boardCollapse').textContent = '盤を畳む';
+  $('#boardCollapse').setAttribute('aria-expanded', 'true');
+  splitter.setAttribute('aria-valuemax', '70');
+  splitter.removeAttribute('aria-valuetext');
+}
+$('#boardCollapse').onclick = () => {
+  if (boardCollapsed) { setReaderRatio(expandedRatio); return; }
+  expandedRatio = Number(splitter.getAttribute('aria-valuenow')) / 100;
+  boardCollapsed = true;
+  app.classList.add('board-collapsed');
+  boardPanel.hidden = true;
+  $('#boardCollapse').textContent = '盤を戻す';
+  $('#boardCollapse').setAttribute('aria-expanded', 'false');
+  splitter.setAttribute('aria-valuemax', '100');
+  splitter.setAttribute('aria-valuenow', '100');
+  splitter.setAttribute('aria-valuetext', '盤を畳んでいます');
+  queuePdfRender();
+};
+function resizeLayout() {
+  syncViewportHeight();
+  if (boardCollapsed) { queuePdfRender(); return; }
+  setReaderRatio(Number(splitter.getAttribute('aria-valuenow')) / 100);
+}
+window.visualViewport?.addEventListener('resize', resizeLayout);
+window.addEventListener('pageshow', resizeLayout);
+
 function setReaderRatio(ratio) {
+  if (boardCollapsed) revealBoard();
   const padding = getComputedStyle(app);
   const available = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
   const minBoardPanel = available < 600 ? 250 : 300;
@@ -53,6 +94,7 @@ function setReaderRatio(ratio) {
 const savedRatio = Number(safeStorage.get('shogi-boardreader:split-mobile-v3'));
 setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 ? savedRatio : (window.innerWidth <= 600 ? .34 : .5));
 $('#boardFit').onclick = () => {
+  if (boardCollapsed) revealBoard();
   const padding = getComputedStyle(app);
   const height = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
   const boardWidth = Math.min(boardPanel.clientWidth - 20, 480);
@@ -606,6 +648,7 @@ resetButton.addEventListener("click", () => {
 });
 
 function sizeBoard() {
+  if (boardCollapsed) return;
   const frame = boardEl.parentElement;
   const style = getComputedStyle(frame);
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
@@ -653,7 +696,7 @@ resizeObserver.observe(boardColumn);
 resizeObserver.observe(recordContext);
 resizeObserver.observe(leftHandColumn);
 resizeObserver.observe(rightHandColumn);
-window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
+window.addEventListener('resize', resizeLayout);
 
 window.addEventListener("orientationchange", () => {
   window.setTimeout(() => {
