@@ -10,6 +10,7 @@ const splitter = $("#splitter");
 const splitHalf = $("#splitHalf");
 
 const boardEl = $("#board");
+const boardWrap = $(".board-wrap");
 const senteHandEl = $("#senteHand");
 const goteHandEl = $("#goteHand");
 const promotionBar = $("#promotionBar");
@@ -608,6 +609,7 @@ const resizeObserver = new ResizeObserver(() => {
 
 resizeObserver.observe(readerPanel);
 resizeObserver.observe(boardPanel);
+resizeObserver.observe(boardWrap);
 window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
 
 window.addEventListener("orientationchange", () => {
@@ -632,16 +634,58 @@ boardEl.addEventListener('keydown', (event) => {
   }
 });
 
+function positionLabelFor(node) {
+  const lines = (node?.comment || '').split(/\n+/).map(line => line.trim()).filter(Boolean);
+  return [...lines].reverse().find(line => line.length <= 24 && /図/.test(line) && !/[。！？]/.test(line)) || '';
+}
+
+function branchContext() {
+  if (!record || !playback) return null;
+  for (let node = record.current; node?.prev; node = node.prev) {
+    const first = node.prev.next;
+    if (first?.branch) return { node, first };
+  }
+  return null;
+}
+
+function updateBranchSwitcher() {
+  const select = $('#branchSelect');
+  const context = branchContext();
+  select.replaceChildren();
+  if (!context) {
+    select.hidden = true;
+    return;
+  }
+  for (let branch = context.first; branch; branch = branch.branch) {
+    const option = document.createElement('option');
+    option.value = String(branch.branchIndex);
+    option.textContent = branch.branchIndex ? `変化${branch.branchIndex}` : '本譜';
+    option.selected = branch.branchIndex === context.node.branchIndex;
+    select.append(option);
+  }
+  select.hidden = false;
+  select.dataset.ply = String(context.node.ply);
+}
+
 function updatePlayback() {
   const ply = record?.current.ply ?? 0;
-  $('.playback').hidden = !record;
+  const playbackEl = $('.playback');
+  playbackEl.hidden = !record;
   $('#moveCount').textContent = record && playback ? `${ply} / ${record.length} 手` : '自由盤';
+  $('#currentMove').textContent = record && playback
+    ? (ply === 0 ? '開始局面' : `${ply}手 ${record.current.displayText}`)
+    : '自由盤';
+  const label = record && playback ? positionLabelFor(record.current) : '';
+  $('#positionLabel').textContent = label;
+  $('#positionLabel').hidden = !label;
+  updateBranchSwitcher();
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
   for (const id of ['lastMove','nextMove']) $("#"+id).disabled = !record || (playback && ply === record.length);
   $('#recordListButton').disabled = !record;
   $('#boardMode').textContent = playback ? `${game.turn==='b'?'▲ 先手':'△ 後手'}の手番` : record ? '検討中' : '自由盤';
   $('#studyPosition').hidden = !playback;
   $('#resumeRecord').hidden = playback;
+  requestAnimationFrame(sizeBoard);
 }
 function showRecordPosition() {
   playback = true;
@@ -657,6 +701,18 @@ $('#firstMove').onclick = () => navigateRecord(0);
 $('#prevMove').onclick = () => navigateRecord(record.current.ply-1);
 $('#nextMove').onclick = () => navigateRecord(record.current.ply+1);
 $('#lastMove').onclick = () => navigateRecord(record.length);
+$('#branchSelect').onchange = () => {
+  if (!record || !playback) return;
+  const context = branchContext();
+  if (!context) return;
+  const wanted = Number($('#branchSelect').value);
+  if (wanted === context.node.branchIndex) return;
+  let target = context.first;
+  while (target && target.branchIndex !== wanted) target = target.branch;
+  if (!target) return;
+  record.gotoNode(target);
+  showRecordPosition();
+};
 $('#recordFile').addEventListener('change', async (event) => {
   const file = event.target.files?.[0]; event.target.value = '';
   if (!file) return;
