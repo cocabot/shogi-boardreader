@@ -54,7 +54,7 @@ test('free board move and tucked-away controls work',async({page})=>{
 test('KIF playback keeps only previous and next controls visible',async({page})=>{
   await page.locator('#recordFile').setInputFiles(fixture('variations.kif'));
   await expect(page.locator('#moveCount')).toHaveText('0 / 7 手');
-  await expect(page.locator('.playback')).toBeVisible();
+  await expect(page.locator('#moveRail')).toBeVisible();
 
   for(let i=0;i<3;i++) await page.locator('#nextMove').tap();
   await expect(page.locator('.piece.promoted')).toHaveText('馬');
@@ -87,10 +87,10 @@ test('record load resizes immediately and shows move, diagram label and inline b
 
   await expect.poll(async()=>page.evaluate(()=>{
     const board=document.querySelector('.board-frame').getBoundingClientRect();
-    const controls=document.querySelector('.playback').getBoundingClientRect();
+    const wrap=document.querySelector('.board-wrap').getBoundingClientRect();
     const rail=document.querySelector('#moveRail').getBoundingClientRect();
     return {
-      clear: board.bottom <= controls.top + 1,
+      clear: board.bottom <= wrap.bottom + 1,
       railRight: rail.right <= innerWidth + 1,
       boardLeft: board.left,
       boardWidth: board.width,
@@ -123,10 +123,12 @@ test('record load resizes immediately and shows move, diagram label and inline b
     nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
     movesBottom:document.querySelector('#nearbyMoves').getBoundingClientRect().bottom,
     summaryHeight:document.querySelector('.playback').getBoundingClientRect().height,
+    visibleRows:document.querySelectorAll('#nearbyMoves button').length,
   }));
   expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
   expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
-  expect(navLayout.summaryHeight).toBeLessThanOrEqual(32);
+  expect(navLayout.summaryHeight).toBeLessThanOrEqual(2);
+  expect(navLayout.visibleRows).toBeGreaterThanOrEqual(5);
   await expect(page.locator('#branchOrigin')).toContainText('3手目から分岐');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
   await expect(page.locator('#branchSelect option')).toHaveCount(2);
@@ -158,14 +160,15 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await page.screenshot({path:info.outputPath('record-context.png')});
 });
 
-test('side move rail jumps to nearby moves and opens full record list',async({page})=>{
+test('side move rail jumps to nearby moves and full list stays in the overflow menu',async({page})=>{
   await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
   for(let i=0;i<4;i++) await page.locator('#nextMove').tap();
   const previous=page.locator('#nearbyMoves button').filter({hasText:'２二角成'});
   await expect(previous).toBeVisible();
   await previous.tap();
   await expect(page.locator('#currentMove')).toContainText('3手');
-  await page.locator('#railRecordList').tap();
+  await page.locator('#boardMenuButton').tap();
+  await page.locator('#recordListButton').tap();
   await expect(page.locator('#recordDialog')).toBeVisible();
 });
 
@@ -184,6 +187,15 @@ test('invalid record reports an error without losing the loaded record',async({p
   await expect(page.locator('#messageDialog')).toBeVisible();
   await page.locator('#closeMessage').tap();
   await expect(page.locator('#moveCount')).toHaveText('0 / 7 手');
+});
+
+test('PDF status strip is removed and display settings live in the top toolbar',async({page})=>{
+  await expect(page.locator('.pdf-info')).toHaveCount(0);
+  await expect(page.locator('.reader-toolbar .pdf-toolbar-help')).toBeVisible();
+  await page.locator('.pdf-toolbar-help summary').tap();
+  await expect(page.locator('#pdfCompat')).toBeVisible();
+  const rows=await page.locator('#readerPanel').evaluate(el=>getComputedStyle(el).gridTemplateRows.split(' ').length);
+  expect(rows).toBe(2);
 });
 
 test('Japanese CID PDF renders text correctly on WebKit',async({page},info)=>{
