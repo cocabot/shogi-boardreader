@@ -14,6 +14,8 @@ const boardWrap = $(".board-wrap");
 const boardLayout = $(".board-layout");
 const boardColumn = $(".board-column");
 const recordContext = $("#recordContext");
+const leftHandColumn = $(".side-hand-left");
+const rightHandColumn = $(".side-hand-right");
 const moveRail = $("#moveRail");
 const senteHandEl = $("#senteHand");
 const goteHandEl = $("#goteHand");
@@ -601,10 +603,13 @@ function sizeBoard() {
   const style = getComputedStyle(frame);
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
-  const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width + 4 : 0;
+  const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width : 0;
+  const leftHandWidth = leftHandColumn?.getBoundingClientRect().width || 0;
+  const rightHandWidth = rightHandColumn?.getBoundingClientRect().width || 0;
   const contextHeight = recordContext && !recordContext.hidden ? recordContext.getBoundingClientRect().height + 2 : 0;
+  const gapBudget = moveRail && !moveRail.hidden ? 9 : 6;
   const size = Math.max(0, Math.floor(Math.min(
-    boardLayout.clientWidth - railWidth - dx,
+    boardLayout.clientWidth - railWidth - leftHandWidth - rightHandWidth - gapBudget - dx,
     boardLayout.clientHeight - contextHeight - dy,
     480,
   )));
@@ -623,6 +628,8 @@ resizeObserver.observe(boardWrap);
 resizeObserver.observe(boardLayout);
 resizeObserver.observe(boardColumn);
 resizeObserver.observe(recordContext);
+resizeObserver.observe(leftHandColumn);
+resizeObserver.observe(rightHandColumn);
 window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
 
 window.addEventListener("orientationchange", () => {
