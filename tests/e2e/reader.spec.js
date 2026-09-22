@@ -111,7 +111,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#positionLabel')).toHaveText('途中図');
-  await expect(page.locator('#positionLabel')).toBeVisible();
+  await expect(page.locator('#positionLabel')).toBeHidden();
   await expect(page.locator('#nearbyMoves button.has-diagram').filter({hasText:'途中図'})).toBeVisible();
 
   await page.locator('#nextMove').tap();
