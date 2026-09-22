@@ -687,28 +687,19 @@ function renderNearbyMoves() {
   let currentIndex = moves.indexOf(record.current);
   if (currentIndex < 0) currentIndex = moves.findIndex(node => node.ply === record.current.ply && node.branchIndex === record.current.branchIndex);
   if (currentIndex < 0) currentIndex = 0;
-  const start = Math.max(0, currentIndex - 5);
-  const end = Math.min(moves.length, currentIndex + 6);
+  const radius = branchContext() ? 3 : 4;
+  const start = Math.max(0, currentIndex - radius);
+  const end = Math.min(moves.length, currentIndex + radius + 1);
   for (let i = start; i < end; i++) {
     const node = moves[i];
     const row = document.createElement('li');
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('aria-current', String(node === record.current));
-    const isBranchPoint = Boolean(node.prev?.next?.branch);
-    const diagramLabel = positionLabelFor(node);
-    if (isBranchPoint) button.classList.add('has-branch');
-    if (diagramLabel) button.classList.add('has-diagram');
+    if (node.prev?.next?.branch) button.classList.add('has-branch');
     const strong = document.createElement('strong');
     strong.textContent = node.ply ? `${node.ply} ${node.displayText}` : '0 開始局面';
-    const small = document.createElement('small');
-    if (diagramLabel) {
-      small.className = 'diagram-label';
-      small.textContent = diagramLabel;
-    } else {
-      small.textContent = node === record.current ? '現在' : node.ply < record.current.ply ? '前' : '次';
-    }
-    button.append(strong, small);
+    button.append(strong);
     button.onclick = () => {
       record.gotoNode(node);
       showRecordPosition();
@@ -716,9 +707,7 @@ function renderNearbyMoves() {
     row.append(button);
     list.append(row);
   }
-  requestAnimationFrame(() => {
-    list.querySelector('[aria-current="true"]')?.scrollIntoView({block:'nearest'});
-  });
+
 }
 
 function updatePlayback() {
@@ -730,6 +719,17 @@ function updatePlayback() {
   const label = record && playback ? positionLabelFor(record.current) : '';
   $('#positionLabel').textContent = label;
   $('#positionLabel').hidden = !label;
+
+  const context = record && playback ? branchContext() : null;
+  const branchLabel = !context || context.node.branchIndex === 0
+    ? '本譜'
+    : `${context.node.ply}手目からの変化${context.node.branchIndex}`;
+  $('#recordContext').hidden = !record || !playback;
+  $('#recordProgress').textContent = record && playback ? `${ply} / ${record.length}手` : '';
+  $('#recordDiagram').textContent = label;
+  $('#recordDiagram').hidden = !label;
+  $('#recordBranch').textContent = branchLabel;
+
   updateBranchSwitcher();
   renderNearbyMoves();
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
