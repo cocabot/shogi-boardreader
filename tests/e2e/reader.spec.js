@@ -92,11 +92,18 @@ test('mobile hands and playback leave the full width for the board',async({page}
   })).toBe(true);
   await page.locator('#nextMove').tap();
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#quickContext')).toContainText('途中図');
+  await expect(page.locator('#sceneMarker')).toContainText('途中図');
+  const beforeBranch = await page.locator('.board-frame').boundingBox();
   await page.locator('#nextMove').tap();
-  await expect(page.locator('#branchBox')).toBeVisible();
+  await expect(page.locator('#branchTrigger')).toHaveText('分岐あり ▾');
+  await expect.poll(async()=> {
+    const after = await page.locator('.board-frame').boundingBox();
+    return Math.abs(after.width-beforeBranch.width)+Math.abs(after.y-beforeBranch.y);
+  }).toBeLessThan(1);
+  await page.locator('#branchTrigger').tap();
+  await expect(page.locator('#sceneDialog')).toBeVisible();
   await expect(page.locator('#quickMove')).toContainText('２二角成');
-  await page.locator('#branchSelect').selectOption('1');
+  await page.locator('#sceneChoices button').filter({hasText:'変化1'}).tap();
   await expect(page.locator('#quickMove')).toContainText('２六歩');
   await expect(page.locator('#quickContext')).toContainText('変化1');
   await page.locator('#recordQuickList').tap();

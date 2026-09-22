@@ -1505,3 +1505,34 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
   .branch-box select{flex:1;min-width:0;width:auto;height:28px!important;min-height:28px!important;font-size:12px!important;padding:0 5px}
   .promotion-bar{bottom:52px}
 }
+
+/* Stable scene navigation; branch choices never take space from the board. */
+.scene-bar{display:none}
+#sceneDialog{width:min(92vw,420px);max-height:70dvh;padding:14px;border:1px solid #bdc7b4;border-radius:12px;background:#f8f7ee}
+#sceneDialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+#sceneDialog h2{font-size:16px;margin:0}
+#sceneChoices{display:flex;flex-direction:column;gap:6px;overflow:auto}
+#sceneChoices button{min-height:44px;text-align:left;white-space:normal;padding:8px 10px}
+#sceneChoices button[aria-current=true]{background:#e1ecdc;border-color:#668e71}
+@media(max-width:600px){
+  .move-rail{height:77px!important;min-height:77px;max-height:77px;gap:3px}
+  .move-rail #branchBox{display:none!important}
+  .scene-bar{display:flex;align-items:center;justify-content:space-between;gap:6px;height:28px;min-height:28px}
+  .scene-bar button{height:28px;min-height:28px;padding:1px 8px;font-size:12px;border-color:transparent;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #sceneMarker{min-width:0;max-width:70%;text-align:left}
+  #sceneMarker.is-diagram{font-weight:700;background:#f1dfb5;color:#644b20;border-color:#d4ba7e}
+  #branchTrigger{flex-shrink:0;color:#46614b}
+  #branchTrigger:disabled{opacity:.65}
+  #branchTrigger.is-branch{font-weight:700;background:#e1ecdc;border-color:#a4baa0}
+  .hands-beside{grid-template-columns:43px minmax(0,1fr) 43px!important;grid-template-rows:minmax(0,1fr) auto!important}
+  .hands-beside .board-column{grid-column:2;grid-row:1}
+  .hands-beside .side-hand-column{grid-row:1;height:100%!important;min-height:0;max-height:100%;border:0}
+  .hands-beside .side-hand-left{grid-column:1}
+  .hands-beside .side-hand-right{grid-column:3}
+  .hands-beside .side-hand-column .hand{flex-direction:column!important;height:100%!important;max-height:100%;min-height:0;overflow-x:hidden!important;overflow-y:auto!important;padding:3px 0!important;gap:4px}
+  .hands-beside .side-hand-right .hand{justify-content:flex-end!important}
+  .hands-beside .side-hand-column .hand-side{font-size:10px!important;max-width:43px!important}
+  .hands-beside .side-hand-column .empty-hand{font-size:9px!important}
+  .hands-beside .side-hand-column .hand-piece{min-height:32px!important;height:32px!important;min-width:36px!important}
+  .hands-beside .move-rail{grid-row:2}
+}

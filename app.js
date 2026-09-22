@@ -56,7 +56,7 @@ $('#boardFit').onclick = () => {
   const padding = getComputedStyle(app);
   const height = app.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
   const boardWidth = Math.min(boardPanel.clientWidth - 20, 480);
-  const chrome = moveRail.hidden ? 55 : ($('#branchBox').hidden ? 103 : 135);
+  const chrome = moveRail.hidden ? 55 : 134;
   setReaderRatio((height - boardWidth - chrome - 20) / height);
 };
 
@@ -611,16 +611,21 @@ function sizeBoard() {
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
   if (window.matchMedia('(max-width: 600px)').matches) {
-    const railHeight = moveRail.hidden ? 0 : moveRail.getBoundingClientRect().height;
+    // Decide from the available rectangle, never from a branch or hand's contents.
+    const railHeight = moveRail.hidden ? 0 : 77;
+    const availableHeight = boardLayout.clientHeight - railHeight - 6;
+    const sideHands = boardLayout.clientWidth - Math.min(availableHeight - dy, 480) - dx >= 92;
+    boardLayout.classList.toggle('hands-beside', sideHands);
     const size = Math.max(0, Math.floor(Math.min(
-      boardLayout.clientWidth - dx,
-      boardLayout.clientHeight - 34 - railHeight - dy - 6,
+      boardLayout.clientWidth - dx - (sideHands ? 92 : 0),
+      availableHeight - (sideHands ? 0 : 34) - dy,
       480,
     )));
     boardWrap.style.setProperty('--board-pixels', `${size}px`);
     boardWrap.style.setProperty('--piece-size', `${Math.max(0, (size-2)/9 * .57)}px`);
     return;
   }
+  boardLayout.classList.remove('hands-beside');
   const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width : 0;
   const leftHandWidth = leftHandColumn?.getBoundingClientRect().width || 0;
   const rightHandWidth = rightHandColumn?.getBoundingClientRect().width || 0;
@@ -766,7 +771,13 @@ function updatePlayback() {
   $('#recordBranch').textContent = branchLabel;
 
   $('#quickMove').textContent = record && playback ? (ply ? `${ply} ${record.current.displayText}` : '開始局面') : '';
-  $('#quickContext').textContent = [label, branchLabel, record && playback ? `${ply}/${record.length}手` : '', '一覧 ▴'].filter(Boolean).join(' · ');
+  $('#quickContext').textContent = [branchLabel, record && playback ? `${ply}/${record.length}手` : '', '一覧 ▴'].filter(Boolean).join(' · ');
+  const atBranch = Boolean(record && playback && record.current.prev?.next?.branch);
+  $('#sceneMarker').textContent = label ? `◆ ${label}` : '要所一覧';
+  $('#sceneMarker').classList.toggle('is-diagram', Boolean(label));
+  $('#branchTrigger').textContent = atBranch ? '分岐あり ▾' : context ? `${context.node.branchIndex ? '変化'+context.node.branchIndex : '本譜'} ▾` : '本譜';
+  $('#branchTrigger').classList.toggle('is-branch', atBranch);
+  $('#branchTrigger').disabled = !context;
   updateBranchSwitcher();
   renderNearbyMoves();
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
@@ -802,6 +813,40 @@ $('#branchSelect').onchange = () => {
   if (!target) return;
   record.gotoNode(target);
   showRecordPosition();
+};
+// These choices open over the board so entering a branch never changes its size.
+$('#closeScene').onclick = () => $('#sceneDialog').close();
+$('#branchTrigger').onclick = () => {
+  const context = branchContext();
+  if (!context) return;
+  $('#sceneTitle').textContent = `${context.node.ply}手目の分岐`;
+  const list = $('#sceneChoices'); list.replaceChildren();
+  for (let branch = context.first; branch; branch = branch.branch) {
+    const target = branch;
+    const button = document.createElement('button');
+    button.textContent = `${branch.branchIndex ? '変化'+branch.branchIndex : '本譜'}　${branch.displayText}`;
+    button.setAttribute('aria-current', String(branch === context.node));
+    button.onclick = () => { record.gotoNode(target); showRecordPosition(); $('#sceneDialog').close(); };
+    list.append(button);
+  }
+  $('#sceneDialog').showModal();
+};
+$('#sceneMarker').onclick = () => {
+  if (!record) return;
+  $('#sceneTitle').textContent = '要所の局面';
+  const list = $('#sceneChoices'); list.replaceChildren();
+  for (const node of record.moves) {
+    const label = positionLabelFor(node);
+    const branch = Boolean(node.prev?.next?.branch);
+    if (!label && !branch) continue;
+    const button = document.createElement('button');
+    button.textContent = `${node.ply}手 ${node.displayText}　${[label && '◆ '+label, branch && '分岐あり'].filter(Boolean).join(' · ')}`;
+    button.setAttribute('aria-current', String(node === record.current));
+    button.onclick = () => { record.gotoNode(node); showRecordPosition(); $('#sceneDialog').close(); };
+    list.append(button);
+  }
+  if (!list.children.length) list.textContent = 'この手順には図のラベル・分岐がありません。';
+  $('#sceneDialog').showModal();
 };
 $('#recordFile').addEventListener('change', async (event) => {
   const file = event.target.files?.[0]; event.target.value = '';
@@ -843,7 +888,7 @@ function renderRecordList() {
   for (const node of record.moves) {
     const row = document.createElement('li');
     const jump = document.createElement('button'); jump.className = 'move-jump';
-    jump.textContent = `${node.ply}　${node.ply ? node.displayText : '開始局面'}${node.comment ? ' ▤' : ''}`;
+    jump.textContent = `${node.ply}　${node.ply ? node.displayText : '開始局面'}${positionLabelFor(node) ? ' ◆ '+positionLabelFor(node) : node.comment ? ' ▤' : ''}${node.prev?.next?.branch ? ' · 分岐あり' : ''}`;
     jump.setAttribute('aria-current', String(node === record.current));
     jump.onclick = () => { record.gotoNode(node); showRecordPosition(); $('#recordDialog').close(); };
     row.append(jump);
