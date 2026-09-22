@@ -39,7 +39,7 @@
     </section>
     <div id="splitter" class="splitter" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="上下の表示割合を変更" aria-valuemin="20" aria-valuemax="70" aria-valuenow="34">
       <span class="splitter-hint">本</span><span class="splitter-grip"></span><span class="splitter-hint">盤</span>
-      <button id="splitHalf" type="button" aria-label="50対50に戻す">50:50</button>
+      <button id="splitHalf" type="button" aria-label="盤面を見やすい比率に戻す">盤大</button>
     </div>
     <section id="boardPanel" class="panel board-panel" aria-label="将棋盤">
       <header class="board-header">
@@ -47,9 +47,11 @@
         <span id="boardMode" class="mode-label">自由盤</span>
         <button id="recordListButton" type="button" disabled>棋譜一覧</button>
       </header>
-      <div id="goteHand" class="hand hand-top" aria-label="後手の持ち駒"></div>
+      <div class="hands-row" aria-label="持ち駒">
+        <div id="goteHand" class="hand hand-top" aria-label="後手の持ち駒"></div>
+        <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
+      </div>
       <div class="board-wrap"><div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div></div>
-      <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
       <div class="playback" aria-label="棋譜再生"><button id="firstMove" disabled>先頭</button><button id="prevMove" disabled>前の手</button><output id="moveCount" aria-live="polite">自由盤</output><button id="nextMove" disabled>次の手</button><button id="lastMove" disabled>最後</button></div>
       <footer class="board-controls"><button id="undo">↶ 待った</button><button id="redo">↷ やり直し</button><button id="flip">⇅ 反転</button><button id="reset">初期局面</button></footer>
       <div id="promotionBar" class="promotion-bar" hidden><span>成りますか？</span><button id="promoteYes">成る</button><button id="promoteNo">不成</button></div>
