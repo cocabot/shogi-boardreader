@@ -79,6 +79,48 @@ test('KIF playback keeps only previous and next controls visible',async({page})=
   await expect(page.locator('#nextMove')).toBeDisabled();
 });
 
+test('record load resizes immediately and shows move, diagram label and inline branches',async({page},info)=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.getByRole('separator').press('Home');
+  await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
+  await expect(page.locator('.playback')).toBeVisible();
+
+  await expect.poll(async()=>page.evaluate(()=>{
+    const board=document.querySelector('.board-frame').getBoundingClientRect();
+    const controls=document.querySelector('.playback').getBoundingClientRect();
+    return board.bottom <= controls.top + 1;
+  })).toBe(true);
+
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#currentMove')).toContainText('1手');
+  await expect(page.locator('#currentMove')).toContainText('７六歩');
+
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#positionLabel')).toHaveText('途中図');
+  await expect(page.locator('#positionLabel')).toBeVisible();
+
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#branchSelect')).toBeVisible();
+  await expect(page.locator('#branchSelect')).toHaveValue('0');
+  await expect(page.locator('#branchSelect option')).toHaveCount(2);
+
+  await page.locator('#branchSelect').selectOption('1');
+  await expect(page.locator('#currentMove')).toContainText('２六歩');
+  await expect(page.getByRole('gridcell',{name:'2六 先手 歩',exact:true})).toBeVisible();
+  await expect(page.locator('#branchSelect')).toHaveValue('1');
+
+  await page.locator('#branchSelect').selectOption('0');
+  await expect(page.locator('#currentMove')).toContainText('２二角成');
+  await expect(page.locator('#branchSelect')).toHaveValue('0');
+
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#nextMove')).toBeEnabled();
+  await page.locator('#nextMove').tap();
+  await expect(page.locator('#positionLabel')).toHaveText('第１図');
+
+  await page.screenshot({path:info.outputPath('record-context.png')});
+});
+
 for(const name of ['sample.ki2','sample.csa','shift-jis.kif']){
   test(`file picker accepts ${name}`,async({page})=>{
     await page.locator('#recordFile').setInputFiles(fixture(name));
