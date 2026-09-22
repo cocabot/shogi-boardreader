@@ -22,6 +22,8 @@ test('compact iPhone split keeps the board large and menus out of the way',async
   await page.locator('#boardMenuButton').tap();
   await expect(page.locator('#boardMenuDialog')).toBeVisible();
   await expect(page.locator('#recordFile')).toBeAttached();
+  await expect(page.locator('#pdfFile')).toBeAttached();
+  await expect(page.locator('#pdfStatus')).toBeVisible();
   await expect(page.locator('#undo')).toBeVisible();
   await page.locator('#closeBoardMenu').tap();
   await expect(page.locator('#boardMenuDialog')).not.toBeVisible();
@@ -83,7 +85,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await page.setViewportSize({width:390,height:844});
   await page.getByRole('separator').press('Home');
   await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
-  await expect(page.locator('.playback')).toBeVisible();
+  await expect(page.locator('#moveRail')).toBeVisible();
 
   await expect.poll(async()=>page.evaluate(()=>{
     const board=document.querySelector('.board-frame').getBoundingClientRect();
@@ -122,13 +124,20 @@ test('record load resizes immediately and shows move, diagram label and inline b
     movesTop:document.querySelector('#nearbyMoves').getBoundingClientRect().top,
     nextTop:document.querySelector('#nextMove').getBoundingClientRect().top,
     movesBottom:document.querySelector('#nearbyMoves').getBoundingClientRect().bottom,
-    summaryHeight:document.querySelector('.playback').getBoundingClientRect().height,
+    stateHeight:document.querySelector('#recordState').getBoundingClientRect().height,
     visibleRows:document.querySelectorAll('#nearbyMoves button').length,
+    rowsOverlap:Array.from(document.querySelectorAll('#nearbyMoves li')).some((el,i,all)=>{
+      if(i===all.length-1) return false;
+      const a=el.getBoundingClientRect();
+      const b=all[i+1].getBoundingClientRect();
+      return a.bottom > b.top + 0.5;
+    }),
   }));
   expect(navLayout.prevTop).toBeLessThan(navLayout.movesTop);
   expect(navLayout.nextTop).toBeGreaterThanOrEqual(navLayout.movesBottom-1);
-  expect(navLayout.summaryHeight).toBeLessThanOrEqual(2);
+  expect(navLayout.stateHeight).toBe(0);
   expect(navLayout.visibleRows).toBeGreaterThanOrEqual(5);
+  expect(navLayout.rowsOverlap).toBe(false);
   await expect(page.locator('#branchOrigin')).toContainText('3手目から分岐');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
   await expect(page.locator('#branchSelect option')).toHaveCount(2);
@@ -189,11 +198,17 @@ test('invalid record reports an error without losing the loaded record',async({p
   await expect(page.locator('#moveCount')).toHaveText('0 / 7 手');
 });
 
-test('PDF status strip is removed and display settings live in the top toolbar',async({page})=>{
+test('PDF and record actions live in one top menu with no extra PDF strip',async({page})=>{
   await expect(page.locator('.pdf-info')).toHaveCount(0);
-  await expect(page.locator('.reader-toolbar .pdf-toolbar-help')).toBeVisible();
-  await page.locator('.pdf-toolbar-help summary').tap();
+  await expect(page.locator('.reader-toolbar #boardMenuButton')).toBeVisible();
+  const toolbarHeight=await page.locator('.reader-toolbar').evaluate(el=>el.getBoundingClientRect().height);
+  expect(toolbarHeight).toBeLessThanOrEqual(46);
+  await page.locator('#boardMenuButton').tap();
+  await expect(page.locator('#boardMenuDialog')).toBeVisible();
+  await expect(page.locator('#pdfFile')).toBeAttached();
+  await expect(page.locator('#recordFile')).toBeAttached();
   await expect(page.locator('#pdfCompat')).toBeVisible();
+  await expect(page.locator('#pdfStatus')).toBeVisible();
   const rows=await page.locator('#readerPanel').evaluate(el=>getComputedStyle(el).gridTemplateRows.split(' ').length);
   expect(rows).toBe(2);
 });
