@@ -21,6 +21,9 @@ test('board fits portrait sizes and splitter extremes with contained glyphs',asy
  }
  await page.setViewportSize({width:390,height:844});
  await page.getByRole('separator').press('Home');
+ await expect.poll(async()=>page.locator('.board').evaluate(board=>board.getBoundingClientRect().width)).toBeGreaterThan(300);
+ const splitterHeight=await page.locator('#splitter').evaluate(el=>el.getBoundingClientRect().height);
+ expect(splitterHeight).toBeLessThanOrEqual(22);
  await page.screenshot({path:info.outputPath('portrait.png')});
 });
 
@@ -28,11 +31,12 @@ test('free board moves, undo, redo, flip and persistence',async({page})=>{
  await page.getByRole('gridcell',{name:'7七 先手 歩',exact:true}).tap();
  await page.getByRole('gridcell',{name:'7六 空きマス',exact:true}).tap();
  await expect(page.getByRole('gridcell',{name:'7六 先手 歩',exact:true})).toHaveClass(/last-to/);
+ await page.locator('#boardMenuButton').tap();
  await page.getByRole('button',{name:'↶ 待った',exact:true}).tap();
  await expect(page.getByRole('gridcell',{name:'7七 先手 歩',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'↷ やり直し',exact:true}).tap();
  await page.reload();await expect(page.getByRole('gridcell',{name:'7六 先手 歩',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'⇅ 反転',exact:true}).tap();
+ await page.getByRole('button',{name:/盤を反転|先手側/}).tap();
  await expect(page.locator('.square').first()).toHaveAttribute('aria-label','1九 先手 香');
  await expect(page.locator('.hand-top')).toHaveAttribute('aria-label','先手の持ち駒');
 });
@@ -46,7 +50,8 @@ test('KIF playback, captures, drops, jumps, branches and study keeps original',a
  await expect(page.locator('#goteHand')).toContainText('角1');
  await page.getByRole('button',{name:'次の手',exact:true}).tap();
  await expect(page.getByRole('gridcell',{name:'4五 先手 角',exact:true})).toBeVisible();
- await page.getByRole('button',{name:'棋譜一覧',exact:true}).tap();
+ await page.locator('#boardMenuButton').tap();
+ await page.locator('#boardMenuButton').tap(); await page.getByRole('button',{name:'棋譜一覧',exact:true}).tap();
  await page.getByLabel('3手目の変化').selectOption('1');
  await expect(page.locator('#moveCount')).toHaveText('3 / 4 手');
  await page.getByLabel('4手目の変化').selectOption('1');
@@ -54,14 +59,18 @@ test('KIF playback, captures, drops, jumps, branches and study keeps original',a
  await page.getByRole('button',{name:'本譜に戻る',exact:true}).tap();
  await page.locator('.move-jump').nth(3).tap();
  await expect(page.locator('#moveCount')).toHaveText('3 / 7 手');
- await page.getByRole('button',{name:'棋譜一覧',exact:true}).tap();
+ await page.locator('#boardMenuButton').tap(); await page.getByRole('button',{name:'棋譜一覧',exact:true}).tap();
  await page.getByRole('button',{name:'この局面で検討',exact:true}).tap();
  await expect(page.locator('#boardMode')).toHaveText('検討中');
  await page.getByRole('gridcell',{name:'2二 先手 馬',exact:true}).tap();
  await page.getByRole('gridcell',{name:'5五 空きマス',exact:true}).tap();
- await page.getByRole('button',{name:'先頭',exact:true}).tap();
+ await page.locator('#boardMenuButton').tap();
+ await page.getByRole('button',{name:'棋譜の先頭',exact:true}).tap();
+ await page.locator('#closeBoardMenu').tap();
  await expect(page.locator('.piece')).toHaveCount(40);
- await page.getByRole('button',{name:'最後',exact:true}).tap();
+ await page.locator('#boardMenuButton').tap();
+ await page.getByRole('button',{name:'棋譜の最後',exact:true}).tap();
+ await page.locator('#closeBoardMenu').tap();
  await expect(page.locator('#moveCount')).toHaveText('7 / 7 手');
  await expect(page.getByRole('button',{name:'次の手',exact:true})).toBeDisabled();
 });
