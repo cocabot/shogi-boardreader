@@ -12,6 +12,8 @@ const splitHalf = $("#splitHalf");
 const boardEl = $("#board");
 const boardWrap = $(".board-wrap");
 const boardLayout = $(".board-layout");
+const boardColumn = $(".board-column");
+const recordContext = $("#recordContext");
 const moveRail = $("#moveRail");
 const senteHandEl = $("#senteHand");
 const goteHandEl = $("#goteHand");
@@ -600,9 +602,10 @@ function sizeBoard() {
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
   const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width + 4 : 0;
+  const contextHeight = recordContext && !recordContext.hidden ? recordContext.getBoundingClientRect().height + 2 : 0;
   const size = Math.max(0, Math.floor(Math.min(
     boardLayout.clientWidth - railWidth - dx,
-    boardLayout.clientHeight - dy,
+    boardLayout.clientHeight - contextHeight - dy,
     480,
   )));
   boardWrap.style.setProperty('--board-pixels', `${size}px`);
@@ -618,6 +621,8 @@ resizeObserver.observe(readerPanel);
 resizeObserver.observe(boardPanel);
 resizeObserver.observe(boardWrap);
 resizeObserver.observe(boardLayout);
+resizeObserver.observe(boardColumn);
+resizeObserver.observe(recordContext);
 window.addEventListener('resize', () => setReaderRatio(Number(splitter.getAttribute('aria-valuenow'))/100));
 
 window.addEventListener("orientationchange", () => {
@@ -689,7 +694,7 @@ function renderNearbyMoves() {
   let currentIndex = moves.indexOf(record.current);
   if (currentIndex < 0) currentIndex = moves.findIndex(node => node.ply === record.current.ply && node.branchIndex === record.current.branchIndex);
   if (currentIndex < 0) currentIndex = 0;
-  const radius = branchContext() ? 3 : 4;
+  const radius = 2;
   const start = Math.max(0, currentIndex - radius);
   const end = Math.min(moves.length, currentIndex + radius + 1);
   for (let i = start; i < end; i++) {
