@@ -45,6 +45,11 @@
       <div class="board-wrap">
         <div class="board-layout">
           <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
+          <div id="recordContext" class="record-context" hidden aria-live="polite">
+            <span id="recordProgress"></span>
+            <span id="recordDiagram" hidden></span>
+            <span id="recordBranch"></span>
+          </div>
           <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
             <button id="prevMove" class="rail-step rail-prev" disabled>‹ 前の手</button>
             <div id="branchBox" class="branch-box" hidden>
@@ -66,7 +71,7 @@
   </main>
   <dialog id="boardMenuDialog" class="board-menu-dialog app-menu-dialog" aria-labelledby="boardMenuTitle">
     <header><div><h2 id="boardMenuTitle">メニュー</h2><span id="boardMode" class="mode-label">自由盤</span></div><button id="closeBoardMenu" aria-label="メニューを閉じる">閉じる</button></header>
-    <section class="menu-section">
+    <section class="menu-section menu-section-book">
       <h3>本</h3>
       <div id="pdfStatus" class="menu-file-name" role="status">PDF未選択</div>
       <div class="board-menu-grid">
@@ -75,7 +80,7 @@
         <a id="nativePdf" class="menu-link menu-wide" hidden target="_blank" rel="noopener">SafariでPDFを開く</a>
       </div>
     </section>
-    <section class="menu-section">
+    <section class="menu-section menu-section-record">
       <h3>棋譜</h3>
       <div class="board-menu-grid">
         <label class="file-button secondary menu-wide"><input id="recordFile" type="file" aria-label="棋譜を開く" accept=".kif,.ki2,.kifu,.ki2u,.csa,text/plain" /><span>棋譜を開く</span></label>
@@ -85,7 +90,7 @@
         <button id="splitHalf" type="button">本と盤を 50:50</button>
       </div>
     </section>
-    <section class="menu-section">
+    <section class="menu-section menu-section-board">
       <h3>盤面</h3>
       <div class="board-menu-grid">
         <button id="undo" type="button">↶ 待った</button>
