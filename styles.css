@@ -647,3 +647,115 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
     height:29px;
   }
 }
+
+
+/* Dense reader/record layout: no bottom PDF strip and no board-bottom record chrome. */
+.visually-hidden{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.reader-panel{
+  grid-template-rows:auto minmax(0,1fr);
+}
+.pdf-info{display:none!important}
+.pdf-toolbar-help{
+  position:relative;
+  flex:0 0 auto;
+}
+.pdf-toolbar-help>summary{
+  display:grid;
+  place-items:center;
+  width:28px;
+  min-height:36px;
+  padding:0;
+  border:1px solid #516055;
+  border-radius:7px;
+  background:#34423a;
+  color:#f3f5ed;
+  list-style:none;
+  font-size:12px;
+  letter-spacing:1px;
+}
+.pdf-toolbar-help>summary::-webkit-details-marker{display:none}
+.pdf-toolbar-help>div{
+  top:calc(100% + 5px);
+  right:0;
+  bottom:auto;
+  z-index:40;
+  color:var(--text);
+}
+.board-panel{
+  padding-bottom:3px;
+}
+.board-wrap{
+  flex:1 1 auto;
+  min-height:0;
+}
+.move-rail{
+  height:min(100%,calc(var(--board-pixels,270px) + 17px));
+  gap:3px;
+}
+.move-rail .rail-step{
+  flex:0 0 33px;
+  min-height:33px;
+  height:33px;
+}
+.branch-box{
+  flex:0 0 auto;
+  padding:3px 4px;
+}
+.branch-box>span{
+  margin-bottom:2px;
+  font-size:8px;
+}
+.branch-box select{
+  height:22px;
+  min-height:22px;
+  font-size:9px;
+}
+.nearby-moves{
+  flex:1 1 0;
+  min-height:0;
+  justify-content:flex-start;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:none;
+  padding-block:1px;
+}
+.nearby-moves::-webkit-scrollbar{display:none}
+.nearby-moves button{
+  min-height:27px;
+  padding-block:2px;
+}
+.playback.playback-summary{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  min-height:0!important;
+  flex:0 0 0!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  margin:0!important;
+  padding:0!important;
+}
+@media(max-width:390px){
+  .reader-toolbar{
+    flex-wrap:nowrap;
+  }
+  .pdf-toolbar-help>summary{
+    width:25px;
+    min-height:36px;
+  }
+  .move-rail .rail-step{
+    flex-basis:31px;
+    min-height:31px;
+    height:31px;
+  }
+}
