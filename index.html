@@ -37,26 +37,34 @@
         <details class="pdf-help"><summary>表示設定</summary><div><label><input type="checkbox" id="pdfCompat" /> 文字互換表示</label><p>文字が欠ける場合に切り替えてください。埋め込みフォントを輪郭で描画します。</p><a id="nativePdf" hidden target="_blank" rel="noopener">Safariで開く</a><small>元のPDFを端末内で開きます。未埋め込みの特殊な駒文字は復元できない場合があります。</small></div></details>
       </div>
     </section>
-    <div id="splitter" class="splitter" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="上下の表示割合を変更" aria-valuemin="20" aria-valuemax="70" aria-valuenow="34">
-      <span class="splitter-hint">本</span><span class="splitter-grip"></span><span class="splitter-hint">盤</span>
-      <button id="splitHalf" type="button" aria-label="盤面を見やすい比率に戻す">盤大</button>
+    <div id="splitter" class="splitter" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="上下の表示割合を変更" aria-valuemin="20" aria-valuemax="70" aria-valuenow="50">
+      <span class="splitter-grip"></span>
+      <button id="boardMenuButton" class="splitter-menu" type="button" aria-label="盤面メニューを開く">•••</button>
     </div>
     <section id="boardPanel" class="panel board-panel" aria-label="将棋盤">
-      <header class="board-header">
-        <label class="file-button secondary"><input id="recordFile" type="file" aria-label="棋譜を開く" accept=".kif,.ki2,.kifu,.ki2u,.csa,text/plain" /><span>棋譜を開く</span></label>
-        <span id="boardMode" class="mode-label">自由盤</span>
-        <button id="recordListButton" type="button" disabled>棋譜一覧</button>
-      </header>
       <div class="hands-row" aria-label="持ち駒">
         <div id="goteHand" class="hand hand-top" aria-label="後手の持ち駒"></div>
         <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
       </div>
       <div class="board-wrap"><div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div></div>
-      <div class="playback" aria-label="棋譜再生"><button id="firstMove" disabled>先頭</button><button id="prevMove" disabled>前の手</button><output id="moveCount" aria-live="polite">自由盤</output><button id="nextMove" disabled>次の手</button><button id="lastMove" disabled>最後</button></div>
-      <footer class="board-controls"><button id="undo">↶ 待った</button><button id="redo">↷ やり直し</button><button id="flip">⇅ 反転</button><button id="reset">初期局面</button></footer>
+      <div class="playback" aria-label="棋譜再生"><button id="prevMove" disabled>‹ 前</button><output id="moveCount" aria-live="polite">自由盤</output><button id="nextMove" disabled>次 ›</button></div>
       <div id="promotionBar" class="promotion-bar" hidden><span>成りますか？</span><button id="promoteYes">成る</button><button id="promoteNo">不成</button></div>
     </section>
   </main>
+  <dialog id="boardMenuDialog" class="board-menu-dialog" aria-labelledby="boardMenuTitle">
+    <header><div><h2 id="boardMenuTitle">盤面メニュー</h2><span id="boardMode" class="mode-label">自由盤</span></div><button id="closeBoardMenu" aria-label="盤面メニューを閉じる">閉じる</button></header>
+    <div class="board-menu-grid">
+      <label class="file-button secondary menu-wide"><input id="recordFile" type="file" aria-label="棋譜を開く" accept=".kif,.ki2,.kifu,.ki2u,.csa,text/plain" /><span>棋譜を開く</span></label>
+      <button id="recordListButton" type="button" disabled>棋譜一覧</button>
+      <button id="splitHalf" type="button">本と盤を 50:50</button>
+      <button id="firstMove" type="button" disabled>棋譜の先頭</button>
+      <button id="lastMove" type="button" disabled>棋譜の最後</button>
+      <button id="undo" type="button">↶ 待った</button>
+      <button id="redo" type="button">↷ やり直し</button>
+      <button id="flip" type="button">⇅ 盤を反転</button>
+      <button id="reset" type="button">初期局面</button>
+    </div>
+  </dialog>
   <dialog id="recordDialog" aria-labelledby="recordTitle"><header><h2 id="recordTitle">棋譜一覧</h2><button id="closeRecord" aria-label="棋譜一覧を閉じる">閉じる</button></header><p id="recordName"></p><p id="recordMessage" role="status"></p><div class="record-actions"><button id="studyPosition">この局面で検討</button><button id="resumeRecord" hidden>棋譜に戻る</button><button id="mainLine">本譜に戻る</button></div><p class="record-guide">手をタップして移動。分岐のある手は「変化」から選べます。</p><ol id="moveList"></ol></dialog>
   <dialog id="messageDialog" aria-labelledby="messageTitle"><h2 id="messageTitle">棋譜を開けませんでした</h2><p id="messageText"></p><button id="closeMessage">閉じる</button></dialog>
   <script type="module" src="./app.js"></script>
