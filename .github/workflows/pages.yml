@@ -1,4 +1,4 @@
-name: Build and deploy GitHub Pages
+name: Test and deploy GitHub Pages
 
 on:
   push:
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -22,13 +22,17 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: node tests/make-fixtures.mjs
+      - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps webkit
+      - run: npx playwright test --project=webkit-iphone
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
   deploy:
-    needs: build
+    needs: test-build
     permissions:
       pages: write
       id-token: write
