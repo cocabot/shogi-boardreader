@@ -111,8 +111,11 @@ test('record load resizes immediately and shows move, diagram label and inline b
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#positionLabel')).toHaveText('途中図');
-  await expect(page.locator('#positionLabel')).toBeHidden();
-  await expect(page.locator('#nearbyMoves button.has-diagram').filter({hasText:'途中図'})).toBeVisible();
+  await expect(page.locator('#recordContext')).toBeVisible();
+  await expect(page.locator('#recordProgress')).toHaveText('2 / 7手');
+  await expect(page.locator('#recordDiagram')).toHaveText('途中図');
+  await expect(page.locator('#recordDiagram')).toBeVisible();
+  await expect(page.locator('#recordBranch')).toHaveText('本譜');
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#moveRail')).toBeVisible();
@@ -145,6 +148,13 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await expect(page.locator('#nearbyMoves button[aria-current="true"]')).toHaveClass(/has-branch/);
   await expect(page.locator('#nearbyMoves')).toContainText('３四歩');
   await expect(page.locator('#nearbyMoves')).toContainText('同');
+  await expect(page.locator('#nearbyMoves small')).toHaveCount(0);
+  const railCenter=await page.locator('#nearbyMoves').evaluate(list=>{
+    const buttons=[...list.querySelectorAll('button')];
+    const current=buttons.findIndex(button=>button.getAttribute('aria-current')==='true');
+    return {current,count:buttons.length};
+  });
+  expect(Math.abs(railCenter.current-(railCenter.count-1)/2)).toBeLessThanOrEqual(0.5);
 
   await page.locator('#nextMove').tap();
   await expect(page.locator('#currentMove')).toContainText('4手');
@@ -152,6 +162,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await page.locator('#branchSelect').selectOption('1');
   await expect(page.locator('#currentMove')).toContainText('3手');
   await expect(page.locator('#currentMove')).toContainText('２六歩');
+  await expect(page.locator('#recordBranch')).toHaveText('3手目からの変化1');
   await expect(page.getByRole('gridcell',{name:'2六 先手 歩',exact:true})).toBeVisible();
   await expect(page.locator('#branchSelect')).toHaveValue('1');
 
@@ -160,6 +171,7 @@ test('record load resizes immediately and shows move, diagram label and inline b
   await page.locator('#branchSelect').selectOption('0');
   await expect(page.locator('#currentMove')).toContainText('3手');
   await expect(page.locator('#currentMove')).toContainText('２二角成');
+  await expect(page.locator('#recordBranch')).toHaveText('本譜');
   await expect(page.locator('#branchSelect')).toHaveValue('0');
 
   await page.locator('#nextMove').tap();
@@ -209,6 +221,11 @@ test('PDF and record actions live in one top menu with no extra PDF strip',async
   await expect(page.locator('#recordFile')).toBeAttached();
   await expect(page.locator('#pdfCompat')).toBeVisible();
   await expect(page.locator('#pdfStatus')).toBeVisible();
+  const menuColors=await page.evaluate(()=>({
+    book:getComputedStyle(document.querySelector('.menu-section-book')).backgroundColor,
+    record:getComputedStyle(document.querySelector('.menu-section-record')).backgroundColor,
+  }));
+  expect(menuColors.book).not.toBe(menuColors.record);
   const rows=await page.locator('#readerPanel').evaluate(el=>getComputedStyle(el).gridTemplateRows.split(' ').length);
   expect(rows).toBe(2);
 });
