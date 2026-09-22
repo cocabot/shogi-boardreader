@@ -43,13 +43,13 @@
         <div id="senteHand" class="hand hand-bottom" aria-label="先手の持ち駒"></div>
       </div>
       <div class="board-wrap">
+        <div id="recordContext" class="record-context" hidden aria-live="polite">
+          <span id="recordProgress"></span>
+          <span id="recordDiagram" hidden></span>
+          <span id="recordBranch"></span>
+        </div>
         <div class="board-layout">
           <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
-          <div id="recordContext" class="record-context" hidden aria-live="polite">
-            <span id="recordProgress"></span>
-            <span id="recordDiagram" hidden></span>
-            <span id="recordBranch"></span>
-          </div>
           <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
             <button id="prevMove" class="rail-step rail-prev" disabled>‹ 前の手</button>
             <div id="branchBox" class="branch-box" hidden>
