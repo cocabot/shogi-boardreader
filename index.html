@@ -44,12 +44,14 @@
       </div>
       <div class="board-wrap">
         <div class="board-layout">
-          <div id="recordContext" class="record-context" hidden aria-live="polite">
-            <span id="recordBranch"></span>
-            <span id="recordProgress"></span>
-            <span id="recordDiagram" hidden></span>
+          <div class="board-column">
+            <div id="recordContext" class="record-context" hidden aria-live="polite">
+              <span id="recordBranch"></span>
+              <span id="recordProgress"></span>
+              <span id="recordDiagram" hidden></span>
+            </div>
+            <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
           </div>
-          <div class="board-frame"><div id="fileLabels" class="file-labels" aria-hidden="true"></div><div id="rankLabels" class="rank-labels" aria-hidden="true"></div><div id="board" class="board" role="grid" aria-label="将棋盤"></div></div>
           <aside id="moveRail" class="move-rail" hidden aria-label="前後の指し手">
             <div id="branchBox" class="branch-box" hidden>
               <span id="branchOrigin"></span>
