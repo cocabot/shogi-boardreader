@@ -44,7 +44,7 @@ function setReaderRatio(ratio) {
 }
 
 const savedRatio = Number(safeStorage.get("shogi-boardreader:split"));
-setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 ? savedRatio : 0.34);
+setReaderRatio(Number.isFinite(savedRatio) && savedRatio > 0 && savedRatio < 0.46 ? savedRatio : 0.30);
 
 let splitterDrag = null;
 
@@ -71,7 +71,7 @@ function endSplitterDrag(event) {
 
 splitter.addEventListener("pointerup", endSplitterDrag);
 splitter.addEventListener("pointercancel", endSplitterDrag);
-splitHalf.addEventListener("click", () => setReaderRatio(0.5));
+splitHalf.addEventListener("click", () => setReaderRatio(0.30));
 
 splitter.addEventListener('keydown', (event) => {
   if (!['ArrowUp','ArrowDown','Home'].includes(event.key)) return;
@@ -631,6 +631,7 @@ boardEl.addEventListener('keydown', (event) => {
 
 function updatePlayback() {
   const ply = record?.current.ply ?? 0;
+  $('.playback').hidden = !record;
   $('#moveCount').textContent = record && playback ? `${ply} / ${record.length} 手` : '自由盤';
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
   for (const id of ['lastMove','nextMove']) $("#"+id).disabled = !record || (playback && ply === record.length);
