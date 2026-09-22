@@ -11,6 +11,7 @@ const splitHalf = $("#splitHalf");
 
 const boardEl = $("#board");
 const boardWrap = $(".board-wrap");
+const moveRail = $("#moveRail");
 const senteHandEl = $("#senteHand");
 const goteHandEl = $("#goteHand");
 const promotionBar = $("#promotionBar");
@@ -593,13 +594,18 @@ resetButton.addEventListener("click", () => {
 });
 
 function sizeBoard() {
-  const frame = boardEl.parentElement, wrap = frame.parentElement;
+  const frame = boardEl.parentElement;
   const style = getComputedStyle(frame);
   const dx = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 2;
   const dy = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) + 2;
-  const size = Math.max(0, Math.floor(Math.min(wrap.clientWidth-dx, wrap.clientHeight-dy, 480)));
-  boardEl.style.setProperty('--board-pixels', `${size}px`);
-  boardEl.style.setProperty('--piece-size', `${Math.max(0, (size-2)/9 * .57)}px`);
+  const railWidth = moveRail && !moveRail.hidden ? moveRail.getBoundingClientRect().width + 4 : 0;
+  const size = Math.max(0, Math.floor(Math.min(
+    boardWrap.clientWidth - railWidth - dx,
+    boardWrap.clientHeight - dy,
+    480,
+  )));
+  boardWrap.style.setProperty('--board-pixels', `${size}px`);
+  boardWrap.style.setProperty('--piece-size', `${Math.max(0, (size-2)/9 * .57)}px`);
 }
 
 const resizeObserver = new ResizeObserver(() => {
@@ -650,12 +656,14 @@ function branchContext() {
 
 function updateBranchSwitcher() {
   const select = $('#branchSelect');
+  const box = $('#branchBox');
   const context = branchContext();
   select.replaceChildren();
   if (!context) {
-    select.hidden = true;
+    box.hidden = true;
     return;
   }
+  $('#branchOrigin').textContent = `${context.node.ply}手目から分岐`;
   for (let branch = context.first; branch; branch = branch.branch) {
     const option = document.createElement('option');
     option.value = String(branch.branchIndex);
@@ -663,8 +671,43 @@ function updateBranchSwitcher() {
     option.selected = branch.branchIndex === context.node.branchIndex;
     select.append(option);
   }
-  select.hidden = false;
+  box.hidden = false;
   select.dataset.ply = String(context.node.ply);
+}
+
+function renderNearbyMoves() {
+  const list = $('#nearbyMoves');
+  list.replaceChildren();
+  if (!record || !playback) {
+    moveRail.hidden = true;
+    return;
+  }
+  moveRail.hidden = false;
+  const moves = record.moves;
+  let currentIndex = moves.indexOf(record.current);
+  if (currentIndex < 0) currentIndex = moves.findIndex(node => node.ply === record.current.ply && node.branchIndex === record.current.branchIndex);
+  if (currentIndex < 0) currentIndex = 0;
+  const start = Math.max(0, currentIndex - 2);
+  const end = Math.min(moves.length, currentIndex + 3);
+  for (let i = start; i < end; i++) {
+    const node = moves[i];
+    const row = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.setAttribute('aria-current', String(node === record.current));
+    if (node.prev?.next?.branch) button.classList.add('has-branch');
+    const strong = document.createElement('strong');
+    strong.textContent = node.ply ? `${node.ply} ${node.displayText}` : '0 開始局面';
+    const small = document.createElement('small');
+    small.textContent = positionLabelFor(node) || (node === record.current ? '現在' : node.ply < record.current.ply ? '前' : '次');
+    button.append(strong, small);
+    button.onclick = () => {
+      record.gotoNode(node);
+      showRecordPosition();
+    };
+    row.append(button);
+    list.append(row);
+  }
 }
 
 function updatePlayback() {
@@ -679,6 +722,7 @@ function updatePlayback() {
   $('#positionLabel').textContent = label;
   $('#positionLabel').hidden = !label;
   updateBranchSwitcher();
+  renderNearbyMoves();
   for (const id of ['firstMove','prevMove']) $("#"+id).disabled = !record || (playback && ply === 0);
   for (const id of ['lastMove','nextMove']) $("#"+id).disabled = !record || (playback && ply === record.length);
   $('#recordListButton').disabled = !record;
@@ -707,9 +751,16 @@ $('#branchSelect').onchange = () => {
   if (!context) return;
   const wanted = Number($('#branchSelect').value);
   if (wanted === context.node.branchIndex) return;
+  const desiredPly = record.current.ply;
   let target = context.first;
   while (target && target.branchIndex !== wanted) target = target.branch;
   if (!target) return;
+  while (target.next && target.ply < desiredPly) {
+    let next = target.next;
+    while (next && !next.activeBranch) next = next.branch;
+    if (!next) break;
+    target = next;
+  }
   record.gotoNode(target);
   showRecordPosition();
 };
@@ -770,7 +821,14 @@ function renderRecordList() {
     list.append(row);
   }
 }
-$('#recordListButton').onclick = () => { renderRecordList(); $('#recordDialog').showModal(); $('#moveList [aria-current="true"]')?.scrollIntoView({block:'nearest'}); };
+function openRecordList() {
+  if (!record) return;
+  renderRecordList();
+  $('#recordDialog').showModal();
+  $('#moveList [aria-current="true"]')?.scrollIntoView({block:'nearest'});
+}
+$('#recordListButton').onclick = openRecordList;
+$('#railRecordList').onclick = openRecordList;
 $('#closeRecord').onclick = () => $('#recordDialog').close();
 $('#studyPosition').onclick = () => {
   playback = false; history = []; future = []; selected = null;
