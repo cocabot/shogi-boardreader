@@ -1545,15 +1545,8 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
 .app.board-collapsed{grid-template-rows:minmax(0,1fr) 20px 0}
 .app.board-collapsed .board-panel{display:none!important}
 
-/* Installed apps have no Safari toolbar: do not use its reduced innerHeight. */
-html.is-standalone .app{
-  height:100vh;
-  height:100lvh;
-  padding-bottom:min(env(safe-area-inset-bottom,0px),34px);
-}
-@media(display-mode:standalone){
-  .app{height:100vh;height:100lvh;padding-bottom:min(env(safe-area-inset-bottom,0px),34px)}
-}
+/* Keep the same measured visible height in Safari and standalone mode. */
+html.is-standalone .app{padding-bottom:env(safe-area-inset-bottom,0px)}
 /* Give the board area one explicit track, without inherited flex height negotiation. */
 @media(max-width:600px){
   #boardPanel{display:grid;grid-template-rows:minmax(0,1fr);gap:0}

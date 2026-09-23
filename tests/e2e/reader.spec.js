@@ -191,3 +191,35 @@ test('collapse gives the PDF the full window and restores the board',async({page
   const gap=await page.evaluate(()=>innerHeight-document.querySelector('#app').getBoundingClientRect().bottom);
   expect(Math.abs(gap)).toBeLessThan(2);
 });
+
+
+test('visible viewport keeps standalone playback inside the screen',async({page})=>{
+  // Reproduce iOS: the layout viewport is taller than the usable screen.
+  await page.addInitScript(()=>{
+    Object.defineProperty(navigator,'standalone',{get:()=>true});
+    Object.defineProperty(window,'visualViewport',{configurable:true,value:{
+      get height(){return innerHeight-90;},get width(){return innerWidth;},scale:1,
+      addEventListener(...args){window.addEventListener(...args);},
+    }});
+  });
+  await page.reload();
+  await page.locator('#recordFile').setInputFiles(fixture('book-context.kif'));
+  const fits=async()=>page.evaluate(()=>{
+    const app=document.querySelector('#app').getBoundingClientRect();
+    const panel=document.querySelector('#boardPanel').getBoundingClientRect();
+    const nav=document.querySelector('#moveRail').getBoundingClientRect();
+    const board=document.querySelector('.board-frame').getBoundingClientRect();
+    return Math.abs(app.bottom-visualViewport.height)<=1 && nav.bottom<=app.bottom+1 && panel.bottom-nav.bottom<=6 && board.bottom<=nav.top+1;
+  });
+  await expect.poll(fits).toBe(true);
+  await page.locator('#boardFit').tap();
+  await expect.poll(fits).toBe(true);
+  for(let i=0;i<3;i++) await page.locator('#nextMove').tap();
+  await expect.poll(fits).toBe(true);
+  await page.setViewportSize({width:390,height:700});
+  await expect.poll(fits).toBe(true);
+  await page.locator('#boardCollapse').tap();
+  await expect(page.locator('#boardPanel')).toBeHidden();
+  await page.locator('#boardCollapse').tap();
+  await expect.poll(fits).toBe(true);
+});

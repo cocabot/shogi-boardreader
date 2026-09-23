@@ -42,15 +42,12 @@ let expandedRatio = .34;
 function syncViewportHeight() {
   const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   document.documentElement.classList.toggle('is-standalone', Boolean(standalone));
-  if (standalone) {
-    // iOS can keep innerHeight/visualViewport at Safari's toolbar-reduced size.
-    // Let the large CSS viewport size the installed app, never pin it to that value.
-    document.documentElement.style.removeProperty('--app-height');
-    return;
-  }
   const viewport = window.visualViewport;
-  const height = !viewport || viewport.scale !== 1 ? window.innerHeight : viewport.height;
-  document.documentElement.style.setProperty('--app-height', `${Math.round(height)}px`);
+  // The visible viewport is authoritative in both Safari and an installed app.
+  // Large viewport units can extend underneath iOS's bottom overlay.
+  if (viewport && Math.abs(viewport.scale - 1) > .01) return;
+  const height = viewport?.height > 0 ? viewport.height : window.innerHeight;
+  document.documentElement.style.setProperty('--app-height', `${Math.floor(height)}px`);
 }
 syncViewportHeight();
 function revealBoard() {
