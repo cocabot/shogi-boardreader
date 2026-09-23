@@ -1544,3 +1544,18 @@ dialog{width:min(92vw,520px);max-height:80vh;max-height:80dvh;border:1px solid v
 .splitter #boardCollapse{left:6px;right:auto;min-height:20px;height:20px;font-size:10px;padding:0 7px}
 .app.board-collapsed{grid-template-rows:minmax(0,1fr) 20px 0}
 .app.board-collapsed .board-panel{display:none!important}
+
+/* Installed apps have no Safari toolbar: do not use its reduced innerHeight. */
+html.is-standalone .app{
+  height:100vh;
+  height:100lvh;
+  padding-bottom:min(env(safe-area-inset-bottom,0px),34px);
+}
+@media(display-mode:standalone){
+  .app{height:100vh;height:100lvh;padding-bottom:min(env(safe-area-inset-bottom,0px),34px)}
+}
+/* Give the board area one explicit track, without inherited flex height negotiation. */
+@media(max-width:600px){
+  #boardPanel{display:grid;grid-template-rows:minmax(0,1fr);gap:0}
+  #boardPanel>.board-wrap{height:100%;width:100%;min-height:0;align-self:stretch}
+}

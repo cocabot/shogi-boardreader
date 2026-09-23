@@ -40,10 +40,16 @@ let names = {b:'先手',w:'後手'};
 let boardCollapsed = false;
 let expandedRatio = .34;
 function syncViewportHeight() {
-  // Standalone iOS can retain Safari's small dvh after launch; use the actual window.
   const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
+  document.documentElement.classList.toggle('is-standalone', Boolean(standalone));
+  if (standalone) {
+    // iOS can keep innerHeight/visualViewport at Safari's toolbar-reduced size.
+    // Let the large CSS viewport size the installed app, never pin it to that value.
+    document.documentElement.style.removeProperty('--app-height');
+    return;
+  }
   const viewport = window.visualViewport;
-  const height = standalone || !viewport || viewport.scale !== 1 ? window.innerHeight : viewport.height;
+  const height = !viewport || viewport.scale !== 1 ? window.innerHeight : viewport.height;
   document.documentElement.style.setProperty('--app-height', `${Math.round(height)}px`);
 }
 syncViewportHeight();
